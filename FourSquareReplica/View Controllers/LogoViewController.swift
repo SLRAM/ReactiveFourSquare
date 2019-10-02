@@ -14,7 +14,7 @@ import MapKit
 class LogoViewController: UIViewController {
     //need to get user location on this controller and segue its initial value to homeviewcontroller
 
-    let locationManager = CLLocationManager()
+//    let locationManager = CLLocationManager()
 
     private let logoView = LogoView()
     var userLocation = CLLocationCoordinate2D()
@@ -23,14 +23,14 @@ class LogoViewController: UIViewController {
         super.viewDidLoad()
         view.addSubview(logoView)
         logoView.delegate = self
-        locationManager.delegate = self
-        if CLLocationManager.authorizationStatus() == .authorizedWhenInUse {
-            //we need to say how accurate the data should be
-            locationManager.desiredAccuracy = kCLLocationAccuracyBest
-            locationManager.startUpdatingLocation()
-        } else {
-            locationManager.requestWhenInUseAuthorization()
-        }
+//        locationManager.delegate = self
+//        if CLLocationManager.authorizationStatus() == .authorizedWhenInUse {
+//            //we need to say how accurate the data should be
+//            locationManager.desiredAccuracy = kCLLocationAccuracyBest
+//            locationManager.startUpdatingLocation()
+//        } else {
+//            locationManager.requestWhenInUseAuthorization()
+//        }
     }
 
 }
@@ -42,18 +42,18 @@ extension LogoViewController: LogoViewDelegate {
         self.navigationController?.pushViewController(detailVC, animated: true)
     }
 }
-extension LogoViewController: CLLocationManagerDelegate {
-    
-    func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
-    print("user changed the authorization logo")
-//        let go = locationManager.startUpdatingLocation
-        print("current location on logo \(locationManager.location)")
-        guard let updatedLocation = locationManager.location?.coordinate else {return}
-        userLocation = updatedLocation
-    }
-    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-        print("user has changed locations logo")
-        guard let currentLocation = locations.last else {return}
-        userLocation = currentLocation.coordinate
-    }
-}
+//extension LogoViewController: CLLocationManagerDelegate {
+//
+//    func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
+//    print("user changed the authorization logo")
+////        let go = locationManager.startUpdatingLocation
+//		print("current location on logo \(String(describing: locationManager.location))")
+//        guard let updatedLocation = locationManager.location?.coordinate else {return}
+//        userLocation = updatedLocation
+//    }
+//    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+//        print("user has changed locations logo")
+//        guard let currentLocation = locations.last else {return}
+//        userLocation = currentLocation.coordinate
+//    }
+//}

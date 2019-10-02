@@ -96,6 +96,8 @@ extension DispatchTimeInterval {
 			return TimeInterval(ns) / TimeInterval(NSEC_PER_SEC)
 		case .never:
 			return .infinity
+		@unknown default:
+			fatalError("Unknown time interval")
 		}
 	}
 

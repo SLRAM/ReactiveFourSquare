@@ -11,14 +11,14 @@ import CoreLocation
 
 class HomeViewController: UIViewController {
     
-    let locationManager = CLLocationManager()
+//    let locationManager = CLLocationManager()
     
     private let homeView = HomeView()
     public let identifer = "marker"
     private let homeListView = HomeListView()
 
    
-    private let searchbarView = SearchBarView()
+//    private let searchbarView = SearchBarView()
     private var venues = [Venues]()
 //    let testingCoordinate = CLLocationCoordinate2D.init(latitude: 40.7484, longitude: -73.9857)
     var query : String?
@@ -50,16 +50,16 @@ class HomeViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        locationManager.delegate = self
-        if CLLocationManager.authorizationStatus() == .authorizedWhenInUse {
-            //we need to say how accurate the data should be
-            locationManager.desiredAccuracy = kCLLocationAccuracyBest
-            locationManager.startUpdatingLocation()
-            homeView.mapView.showsUserLocation = true
-        } else {
-            locationManager.requestWhenInUseAuthorization()
-            homeView.mapView.showsUserLocation = true
-        }
+//        locationManager.delegate = self
+//        if CLLocationManager.authorizationStatus() == .authorizedWhenInUse {
+//            //we need to say how accurate the data should be
+//            locationManager.desiredAccuracy = kCLLocationAccuracyBest
+//            locationManager.startUpdatingLocation()
+//            homeView.mapView.showsUserLocation = true
+//        } else {
+//            locationManager.requestWhenInUseAuthorization()
+//            homeView.mapView.showsUserLocation = true
+//        }
         mapListButton()
         setupLocation()
         homeView.delegate = self
@@ -100,15 +100,8 @@ class HomeViewController: UIViewController {
             }
             getVenues(userLocation: userLocation, near: "", query: query)
         }
-//        else {
-//            //fix this case. use blank query and correct user location info keep for search bar blank query push
-//            getVenues(userLocation: updatedUserLocation, near: "nyc", query: "")
-//
-//        }
     }
     func setupAnnotations(){
-        
-        
         var count = 0
         
         let allAnnotations = self.homeView.mapView.annotations
@@ -335,24 +328,24 @@ extension HomeViewController: HomeViewDelegate {
         }
     }
 }
-extension HomeViewController: CLLocationManagerDelegate {
-    func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
-        print("user changed the authorization")
-        statusRawValue = status.rawValue
-        locationManager.startUpdatingLocation()
-        let currentLocation = homeView.mapView.userLocation
-        let myCurrentRegion = MKCoordinateRegion(center: currentLocation.coordinate, latitudinalMeters: 9000, longitudinalMeters: 9000)
-        homeView.mapView.setRegion(myCurrentRegion, animated: true)
-        print(status.rawValue)
-    }
-    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-        print("user has changed locations")
-        guard let currentLocation = locations.last else {return}
-        updatedUserLocation = currentLocation.coordinate
-        print("The user is in lat: \(currentLocation.coordinate.latitude) and long:\(currentLocation.coordinate.longitude)")
+//extension HomeViewController: CLLocationManagerDelegate {
+//    func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
+//        print("user changed the authorization")
+//        statusRawValue = status.rawValue
+//        locationManager.startUpdatingLocation()
+//        let currentLocation = homeView.mapView.userLocation
 //        let myCurrentRegion = MKCoordinateRegion(center: currentLocation.coordinate, latitudinalMeters: 9000, longitudinalMeters: 9000)
 //        homeView.mapView.setRegion(myCurrentRegion, animated: true)
-//        getVenues(userLocation: updatedUserLocation, near: "", query: "Taco")
-    }
-}
+//        print(status.rawValue)
+//    }
+//    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+//        print("user has changed locations")
+//        guard let currentLocation = locations.last else {return}
+//        updatedUserLocation = currentLocation.coordinate
+//        print("The user is in lat: \(currentLocation.coordinate.latitude) and long:\(currentLocation.coordinate.longitude)")
+////        let myCurrentRegion = MKCoordinateRegion(center: currentLocation.coordinate, latitudinalMeters: 9000, longitudinalMeters: 9000)
+////        homeView.mapView.setRegion(myCurrentRegion, animated: true)
+////        getVenues(userLocation: updatedUserLocation, near: "", query: "Taco")
+//    }
+//}
 

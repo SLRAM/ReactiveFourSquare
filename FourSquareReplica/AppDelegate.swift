@@ -15,10 +15,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-//        let homeVC = HomeViewController()
-//        homeVC.title = "Home"
-//        let homeNav = UINavigationController.init(rootViewController: homeVC)
-        
+
+		let _ = LocationApplicationService.shared
+
         let logoVC = LogoViewController()
         logoVC.title = "Home"
         logoVC.tabBarItem = UITabBarItem(title: "Home", image: UIImage(named: "icons8-home_page"), tag: 0)
