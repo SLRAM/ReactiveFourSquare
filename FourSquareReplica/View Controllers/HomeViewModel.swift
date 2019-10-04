@@ -14,6 +14,8 @@ import MapKit
 class HomeViewModel {
 //	var homeView = HomeView() DO NOT REFER TO IN VIEW MODEL
 	var venues = MutableProperty<[Venues]>([])
+//	var query = MutableProperty<String>("")
+//	var near = MutableProperty<String>("")
 	var authStatus = LocationApplicationService.shared.status
 
 

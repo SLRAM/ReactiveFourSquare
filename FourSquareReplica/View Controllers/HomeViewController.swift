@@ -34,35 +34,8 @@ class HomeViewController: UIViewController {
         var tag: Int!
     }
     
-//    private func getVenues(userLocation: CLLocationCoordinate2D, near: String, query: String) {
-//        FourSquareAPI.searchFourSquare(userLocation: userLocation, near: near, query: query) { (appError, venues) in
-//            if let appError = appError {
-//                print("getVenue - \(appError)")
-//            } else if let venues = venues {
-//                self.venues = venues
-//                DispatchQueue.main.async {
-//                    self.homeView.reloadInputViews()
-//                    self.homeView.myTableView.reloadData()
-//                    self.homeView.mapView.reloadInputViews()
-//                    self.setupAnnotations()
-//                    dump(venues)
-//                }
-//            }
-//        }
-//    }
-    
     override func viewDidLoad() {
         super.viewDidLoad()
-//        locationManager.delegate = self
-//        if CLLocationManager.authorizationStatus() == .authorizedWhenInUse {
-//            //we need to say how accurate the data should be
-//            locationManager.desiredAccuracy = kCLLocationAccuracyBest
-//            locationManager.startUpdatingLocation()
-//            homeView.mapView.showsUserLocation = true
-//        } else {
-//            locationManager.requestWhenInUseAuthorization()
-//            homeView.mapView.showsUserLocation = true
-//        }
         mapListButton()
         setupLocation()
         homeView.delegate = self
@@ -74,6 +47,15 @@ class HomeViewController: UIViewController {
         homeView.locationTextField.delegate = self
         homeView.queryTextField.delegate = self
 		self.homeView.myTableView.reactive.reloadData <~ self.homeViewModel.venues.producer.map {_ in}
+		self.reactive.makeBindingTarget { (this, searchTerms) in
+
+			let (near, query) = searchTerms
+			self.homeViewModel.getVenues(near: near, query: query)
+			} <~ SignalProducer.combineLatest(
+				self.homeView.queryTextField.reactive.textValues,
+				self.homeView.locationTextField.reactive.textValues//combine with near
+
+		)
        // setupAnnotations()
     }
     func setupLocation() {
