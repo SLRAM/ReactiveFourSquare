@@ -8,18 +8,21 @@
 import UIKit
 import MapKit
 import CoreLocation
+import ReactiveCocoa
+import ReactiveSwift
 
 class HomeViewController: UIViewController {
     
 //    let locationManager = CLLocationManager()
     
     private let homeView = HomeView()
+	let homeViewModel = HomeViewModel()
     public let identifer = "marker"
     private let homeListView = HomeListView()
 
    
 //    private let searchbarView = SearchBarView()
-    private var venues = [Venues]()
+//    private var venues = [Venues]()
 //    let testingCoordinate = CLLocationCoordinate2D.init(latitude: 40.7484, longitude: -73.9857)
     var query : String?
     var near = String()
@@ -31,22 +34,22 @@ class HomeViewController: UIViewController {
         var tag: Int!
     }
     
-    private func getVenues(userLocation: CLLocationCoordinate2D, near: String, query: String) {
-        FourSquareAPI.searchFourSquare(userLocation: userLocation, near: near, query: query) { (appError, venues) in
-            if let appError = appError {
-                print("getVenue - \(appError)")
-            } else if let venues = venues {
-                self.venues = venues
-                DispatchQueue.main.async {
-                    self.homeView.reloadInputViews()
-                    self.homeView.myTableView.reloadData()
-                    self.homeView.mapView.reloadInputViews()
-                    self.setupAnnotations()
-                    dump(venues)
-                }
-            }
-        }
-    }
+//    private func getVenues(userLocation: CLLocationCoordinate2D, near: String, query: String) {
+//        FourSquareAPI.searchFourSquare(userLocation: userLocation, near: near, query: query) { (appError, venues) in
+//            if let appError = appError {
+//                print("getVenue - \(appError)")
+//            } else if let venues = venues {
+//                self.venues = venues
+//                DispatchQueue.main.async {
+//                    self.homeView.reloadInputViews()
+//                    self.homeView.myTableView.reloadData()
+//                    self.homeView.mapView.reloadInputViews()
+//                    self.setupAnnotations()
+//                    dump(venues)
+//                }
+//            }
+//        }
+//    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -70,6 +73,7 @@ class HomeViewController: UIViewController {
         
         homeView.locationTextField.delegate = self
         homeView.queryTextField.delegate = self
+		self.homeView.myTableView.reactive.reloadData <~ self.homeViewModel.venues.producer.map {_ in}
        // setupAnnotations()
     }
     func setupLocation() {
@@ -85,7 +89,9 @@ class HomeViewController: UIViewController {
                 //if user deny and no query = use near only
                 homeView.queryTextField.text = query
             }
-            getVenues(userLocation: userLocation, near: near, query: query)
+			self.homeViewModel.getVenues(near: near, query: query)
+
+//            getVenues(userLocation: userLocation, near: near, query: query)
         default:
             homeView.locationTextField.text = "near me"
             homeView.locationTextField.isEnabled = false
@@ -98,15 +104,15 @@ class HomeViewController: UIViewController {
                 //if user accept and no query = use user location only
                 homeView.queryTextField.text = query
             }
-            getVenues(userLocation: userLocation, near: "", query: query)
+			self.homeViewModel.getVenues(near: "", query: query)
+//            getVenues(userLocation: userLocation, near: "", query: query)
         }
     }
     func setupAnnotations(){
         var count = 0
         
-        let allAnnotations = self.homeView.mapView.annotations
-        self.homeView.mapView.removeAnnotations(allAnnotations)
-        for venue in venues {
+        self.homeView.mapView.removeAnnotations(self.homeView.mapView.annotations)
+		for venue in self.homeViewModel.venues.value {
             
             print("venue number: \(count)")
             let regionRadius: CLLocationDistance = 9000
@@ -124,7 +130,7 @@ class HomeViewController: UIViewController {
             count += 1
             
         }
-        let myCurrentRegion = MKCoordinateRegion(center: venues[0].location.coordinate, latitudinalMeters: 9000, longitudinalMeters: 9000)
+        let myCurrentRegion = MKCoordinateRegion(center: self.homeViewModel.venues.value[0].location.coordinate, latitudinalMeters: 9000, longitudinalMeters: 9000)
         homeView.mapView.setRegion(myCurrentRegion, animated: true)
 
     }
@@ -178,12 +184,12 @@ class HomeViewController: UIViewController {
 }
 extension HomeViewController: UITableViewDataSource, UITableViewDelegate{
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return venues.count
+        return self.homeViewModel.venues.value.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         guard let cell = homeView.myTableView.dequeueReusableCell(withIdentifier: "HomeListTableViewCell", for: indexPath) as? HomeListTableViewCell else {return UITableViewCell()}
-        let venueToSet = venues[indexPath.row]
+        let venueToSet = self.homeViewModel.venues.value[indexPath.row]
         cell.locationName.text = "\(indexPath.row + 1). \(venueToSet.name)"
         cell.locationCategory.text = venueToSet.categories.first?.name
         let venueDistance = venueToSet.location.distance?.description ?? " "
@@ -220,7 +226,7 @@ extension HomeViewController: UITableViewDataSource, UITableViewDelegate{
     }
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         guard let selectedCell = homeView.myTableView.cellForRow(at: indexPath) as? HomeListTableViewCell else {return}
-        let venue = venues[indexPath.row]
+        let venue = self.homeViewModel.venues.value[indexPath.row]
         let detailVC = HomeDetailViewController()
         detailVC.venue = venue
         detailVC.homeDetailView.detailImageView.image = selectedCell.cellImage.image
@@ -253,7 +259,7 @@ extension HomeViewController: MKMapViewDelegate{
         
         let destinationVC = HomeDetailViewController()
         
-        let venue = venues[myViewAnnotation.tag]
+        let venue = self.homeViewModel.venues.value[myViewAnnotation.tag]
         destinationVC.venue = venue
 //        destinationVC.homeDetailView.detailImageView.image = selectedCell.cellImage.image
         
@@ -282,7 +288,8 @@ extension HomeViewController: UITextFieldDelegate {
         }
         if let query = query,
             let userLocation = userLocation {
-           getVenues(userLocation: userLocation, near: locationString, query: query)
+			self.homeViewModel.getVenues(near: locationString, query: query)
+//           getVenues(userLocation: userLocation, near: locationString, query: query)
             setupAnnotations()
         }
         
@@ -303,7 +310,8 @@ extension HomeViewController: HomeViewDelegate {
                 homeView.locationTextField.text = "near me"
                 homeView.locationTextField.isEnabled = false
                 guard let query = query else {return}
-                getVenues(userLocation: updatedUserLocation, near: "", query: query)
+				self.homeViewModel.getVenues(near: "", query: query)
+//                getVenues(userLocation: updatedUserLocation, near: "", query: query)
             } else {
                 homeView.nearMeButton.setImage(UIImage(named: "icons8-marker"), for: .normal)
 //                homeView.nearMeButton.backgroundColor = #colorLiteral(red: 0.6193930507, green: 0.7189580798, blue: 0.9812330604, alpha: 1)

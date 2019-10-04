@@ -12,27 +12,18 @@ import CoreLocation
 import MapKit
 
 class HomeViewModel {
-	var homeView = HomeView()
-	var updatedUserLocation = LocationApplicationService.shared.currentLocation
+//	var homeView = HomeView() DO NOT REFER TO IN VIEW MODEL
+	var venues = MutableProperty<[Venues]>([])
 	var authStatus = LocationApplicationService.shared.status
 
-	private var venues = [Venues]() {
-		didSet {
-			self.homeView.reloadInputViews()
-			self.homeView.myTableView.reloadData()
-			self.homeView.mapView.reloadInputViews()
-//			self.setupAnnotations()
 
+	func getVenues(near: String, query: String) {
+		FourSquareAPI.searchFourSquare(userLocation: LocationApplicationService.shared.currentLocation ?? CLLocationCoordinate2D(latitude: 40.781594, longitude: -73.965816), near: near, query: query) { [weak self] (appError, venues) in
+			if let appError = appError {
+			print("getVenue - \(appError)")
+		} else if let venues = venues {
+			self?.venues.value = venues
+			}
 		}
 	}
-
-	private func getVenues(userLocation: CLLocationCoordinate2D, near: String, query: String) {
-	   FourSquareAPI.searchFourSquare(userLocation: userLocation, near: near, query: query) { [weak self] (appError, venues) in
-		   if let appError = appError {
-			   print("getVenue - \(appError)")
-		   } else if let venues = venues {
-			   self?.venues = venues
-		   }
-	   }
-   }
 }
