@@ -22,7 +22,6 @@ class HomeViewController: UIViewController {
 
    
 //    private let searchbarView = SearchBarView()
-//    private var venues = [Venues]()
 //    let testingCoordinate = CLLocationCoordinate2D.init(latitude: 40.7484, longitude: -73.9857)
     var query : String?
     var near = String()
@@ -54,7 +53,6 @@ class HomeViewController: UIViewController {
 			} <~ SignalProducer.combineLatest(
 				self.homeView.queryTextField.reactive.textValues,
 				self.homeView.locationTextField.reactive.textValues//combine with near
-
 		)
        // setupAnnotations()
     }
@@ -166,7 +164,7 @@ class HomeViewController: UIViewController {
 }
 extension HomeViewController: UITableViewDataSource, UITableViewDelegate{
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return self.homeViewModel.venues.value.count
+		return self.homeViewModel.numberOfRowsInSection()
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -185,25 +183,7 @@ extension HomeViewController: UITableViewDataSource, UITableViewDelegate{
             newStr += str + "\n"
         }
         cell.locationDescription.text = newStr
-        ImageAPIClient.getImages(venueID: venueToSet.id) { (appError, imageInfo) in
-            if let appError = appError {
-                print(appError)
-            }else if let imageInfo = imageInfo {
-                if let imageCache = ImageHelper.fetchImageFromCache(urlString: imageInfo) {
-                    DispatchQueue.main.async {
-                        cell.cellImage.image = imageCache
-                    }
-                } else {
-                    ImageHelper.fetchImageFromNetwork(urlString: imageInfo, completion: { (appError, image) in
-                        if let appError = appError {
-                            print("imageHelper error - \(appError)")
-                        } else if let image = image {
-                            cell.cellImage.image = image
-                        }
-                    })
-                }
-            }
-        }
+		cell.cellImage.image = self.homeViewModel.venueImage.value //get function to run when cell is being created
         return cell
     }
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
