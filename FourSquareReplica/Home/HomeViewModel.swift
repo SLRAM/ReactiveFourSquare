@@ -17,7 +17,6 @@ class HomeViewModel {
 //	var query = MutableProperty<String>("")
 //	var near = MutableProperty<String>("")
 	var authStatus = LocationApplicationService.shared.status
-	var venueImage = MutableProperty<UIImage>(UIImage())
 
 
 	func getVenues(near: String, query: String) {
@@ -29,25 +28,6 @@ class HomeViewModel {
 			}
 		}
 	}
-
-	func getImage(venue: Venues) {
-		ImageAPIClient.getImages(venueID: venue.id) { (appError, imageInfo) in
-			if let appError = appError {
-				print(appError)
-			}else if let imageInfo = imageInfo {
-				ImageHelper.fetchImageFromNetwork(urlString: imageInfo, completion: { (appError, image) in
-					if let appError = appError {
-						print("imageHelper error - \(appError)")
-					} else if let image = image {
-						self.venueImage.value = image
-					}
-				})
-			}
-		}
-
-	}
-
-
 
 	func numberOfRowsInSection() -> Int {
 		return venues.value.count
