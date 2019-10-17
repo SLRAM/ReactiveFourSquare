@@ -49,9 +49,7 @@ extension LocationApplicationService: CLLocationManagerDelegate {
 		case .notDetermined, .restricted, .denied:
 			self.currentLocation = nil
 			clLocationManager.requestWhenInUseAuthorization()
-		case .authorizedAlways:
-			fatalError(".authorizedAlways should never happen")
-		case .authorizedWhenInUse:
+		case .authorizedAlways, .authorizedWhenInUse:
 			clLocationManager.startUpdatingLocation()
 			clLocationManager.desiredAccuracy = kCLLocationAccuracyBest
 		default:

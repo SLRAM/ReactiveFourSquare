@@ -13,7 +13,6 @@ import ReactiveSwift
 
 class HomeViewController: UIViewController {
 
-//	let locationManager = CLLocationManager()
 
 	private let homeView = HomeView()
 	let homeViewModel = HomeViewModel()
@@ -71,7 +70,6 @@ class HomeViewController: UIViewController {
 			}
 			self.homeViewModel.getVenues(near: near, query: query)
 
-	//            getVenues(userLocation: userLocation, near: near, query: query)
 		default:
 			homeView.locationTextField.text = "near me"
 			homeView.locationTextField.isEnabled = false
@@ -85,7 +83,6 @@ class HomeViewController: UIViewController {
 				homeView.queryTextField.text = query
 			}
 			self.homeViewModel.getVenues(near: "", query: query)
-	//            getVenues(userLocation: userLocation, near: "", query: query)
 		}
 	}
 	func setupAnnotations(){
@@ -121,26 +118,38 @@ class HomeViewController: UIViewController {
 
 	@objc func toggle() {
 		print("pressed toggle")
-		if statusRawValue != 4 && (homeView.locationTextField.text?.isEmpty)! {
-			let alertController = UIAlertController(title: "Please provide a search location or allow this app access to your location to see this feature.", message: nil, preferredStyle: .alert)
-			let okAction = UIAlertAction(title: "OK", style: .default, handler: nil)
-			let settingsAction = UIAlertAction(title: "Open Settings", style: .default, handler: { (action) -> Void in
-				if let url = URL(string:UIApplication.openSettingsURLString) {
-					if UIApplication.shared.canOpenURL(url) {
-						UIApplication.shared.open(url, options: [:], completionHandler: nil)
+		switch homeViewModel.authStatus {
+		case .notDetermined, .restricted, .denied:
+			if (homeView.locationTextField.text?.isEmpty)! {
+				let alertController = UIAlertController(title: "Please provide a search location or allow this app access to your location to see this feature.", message: nil, preferredStyle: .alert)
+				let okAction = UIAlertAction(title: "OK", style: .default, handler: nil)
+				let settingsAction = UIAlertAction(title: "Open Settings", style: .default, handler: { (action) -> Void in
+					if let url = URL(string:UIApplication.openSettingsURLString) {
+						if UIApplication.shared.canOpenURL(url) {
+							UIApplication.shared.open(url, options: [:], completionHandler: nil)
+						}
 					}
+				})
+				alertController.addAction(okAction)
+				alertController.addAction(settingsAction)
+				present(alertController, animated: true)
+			} else {
+				if navigationItem.rightBarButtonItem?.title == "List" {
+					navigationItem.rightBarButtonItem?.title = "Map"
+				} else {
+					navigationItem.rightBarButtonItem?.title = "List"
 				}
-			})
-			alertController.addAction(okAction)
-			alertController.addAction(settingsAction)
-			present(alertController, animated: true)
-		} else {
+				homeViewSetup()
+			}
+		case .authorizedAlways, .authorizedWhenInUse:
 			if navigationItem.rightBarButtonItem?.title == "List" {
 				navigationItem.rightBarButtonItem?.title = "Map"
 			} else {
 				navigationItem.rightBarButtonItem?.title = "List"
 			}
 			homeViewSetup()
+		default:
+			print("Unhandled case in locationManager for map/list toggle pressed")
 		}
 	}
 	func homeViewSetup() {
@@ -170,20 +179,20 @@ extension HomeViewController: UITableViewDataSource, UITableViewDelegate{
 	func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
 		guard let cell = homeView.myTableView.dequeueReusableCell(withIdentifier: "HomeListTableViewCell", for: indexPath) as? HomeListTableViewCell else {return UITableViewCell()}
 		let venueToSet = self.homeViewModel.venues.value[indexPath.row]
+		cell.model = HomeListTableViewCellModel(venue: venueToSet)
 		cell.locationName.text = "\(indexPath.row + 1). \(venueToSet.name)"
 		cell.locationCategory.text = venueToSet.categories.first?.name
 		let venueDistance = venueToSet.location.distance?.description ?? " "
 		cell.locationDistance.text = "Distance in meters: \(venueDistance)"
 		let addressCount = venueToSet.location.formattedAddress.count
-
-
+		cell.cellImage.reactive.image <~ cell.model.venueImage
+		cell.model.getImage() //triggers func which will update a venueImage value
 		cell.locationDescription.numberOfLines = addressCount
 		var newStr = ""
 		for str in venueToSet.location.formattedAddress {
 			newStr += str + "\n"
 		}
 		cell.locationDescription.text = newStr
-		cell.cellImage.image = self.homeViewModel.venueImage.value //get function to run when cell is being created
 		return cell
 	}
 	func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
@@ -263,26 +272,8 @@ extension HomeViewController: UITextFieldDelegate {
 
 extension HomeViewController: HomeViewDelegate {
     func userLocationButton() {
-        if statusRawValue == 4 {
-            if homeView.nearMeButton.currentImage == UIImage(named: "icons8-marker") {
-//            if homeView.nearMeButton.backgroundColor == #colorLiteral(red: 0.6193930507, green: 0.7189580798, blue: 0.9812330604, alpha: 1)  {
-                homeView.nearMeButton.setImage(UIImage(named: "icons8-location_filled"), for: .normal)
-//                homeView.nearMeButton.backgroundColor = #colorLiteral(red: 0.4481958747, green: 0.5343003273, blue: 0.7696674466, alpha: 1)
-                print("highlighted")
-                homeView.locationTextField.text = "near me"
-                homeView.locationTextField.isEnabled = false
-                guard let query = query else {return}
-				self.homeViewModel.getVenues(near: "", query: query)
-//                getVenues(userLocation: updatedUserLocation, near: "", query: query)
-            } else {
-                homeView.nearMeButton.setImage(UIImage(named: "icons8-marker"), for: .normal)
-//                homeView.nearMeButton.backgroundColor = #colorLiteral(red: 0.6193930507, green: 0.7189580798, blue: 0.9812330604, alpha: 1)
-                homeView.locationTextField.isEnabled = true
-                homeView.locationTextField.text = ""
-                homeView.locationTextField.placeholder = "ex. Miami"
-                print("not highlighted")
-            }
-        } else {
+		switch homeViewModel.authStatus {
+		case .notDetermined, .restricted, .denied:
             let alertController = UIAlertController(title: "Please allow this app to access your user location in settings to enable this feature.", message: nil, preferredStyle: .alert)
             let okAction = UIAlertAction(title: "OK", style: .default, handler: nil)
             let settingsAction = UIAlertAction(title: "Open Settings", style: .default, handler: { (action) -> Void in
@@ -295,27 +286,27 @@ extension HomeViewController: HomeViewDelegate {
             alertController.addAction(okAction)
             alertController.addAction(settingsAction)
             present(alertController, animated: true)
-        }
+		case .authorizedAlways, .authorizedWhenInUse:
+			if homeView.nearMeButton.currentImage == UIImage(named: "icons8-marker") {
+//            if homeView.nearMeButton.backgroundColor == #colorLiteral(red: 0.6193930507, green: 0.7189580798, blue: 0.9812330604, alpha: 1)  {
+				homeView.nearMeButton.setImage(UIImage(named: "icons8-location_filled"), for: .normal)
+//                homeView.nearMeButton.backgroundColor = #colorLiteral(red: 0.4481958747, green: 0.5343003273, blue: 0.7696674466, alpha: 1)
+				print("highlighted")
+				homeView.locationTextField.text = "near me"
+				homeView.locationTextField.isEnabled = false
+				guard let query = query else {return}
+				self.homeViewModel.getVenues(near: "", query: query)
+//                getVenues(userLocation: updatedUserLocation, near: "", query: query)
+			} else {
+				homeView.nearMeButton.setImage(UIImage(named: "icons8-marker"), for: .normal)
+//                homeView.nearMeButton.backgroundColor = #colorLiteral(red: 0.6193930507, green: 0.7189580798, blue: 0.9812330604, alpha: 1)
+				homeView.locationTextField.isEnabled = true
+				homeView.locationTextField.text = ""
+				homeView.locationTextField.placeholder = "ex. Miami"
+				print("not highlighted")
+			}
+		default:
+			print("Unhandled case in locationManager after clicking userLocationButton")
+		}
     }
 }
-//extension HomeViewController: CLLocationManagerDelegate {
-//    func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
-//        print("user changed the authorization")
-//        statusRawValue = status.rawValue
-//        locationManager.startUpdatingLocation()
-//        let currentLocation = homeView.mapView.userLocation
-//        let myCurrentRegion = MKCoordinateRegion(center: currentLocation.coordinate, latitudinalMeters: 9000, longitudinalMeters: 9000)
-//        homeView.mapView.setRegion(myCurrentRegion, animated: true)
-//        print(status.rawValue)
-//    }
-//    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-//        print("user has changed locations")
-//        guard let currentLocation = locations.last else {return}
-//        updatedUserLocation = currentLocation.coordinate
-//        print("The user is in lat: \(currentLocation.coordinate.latitude) and long:\(currentLocation.coordinate.longitude)")
-////        let myCurrentRegion = MKCoordinateRegion(center: currentLocation.coordinate, latitudinalMeters: 9000, longitudinalMeters: 9000)
-////        homeView.mapView.setRegion(myCurrentRegion, animated: true)
-////        getVenues(userLocation: updatedUserLocation, near: "", query: "Taco")
-//    }
-//}
-

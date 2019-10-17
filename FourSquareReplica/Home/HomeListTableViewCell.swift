@@ -7,8 +7,11 @@
 //
 
 import UIKit
+import ReactiveCocoa
+import ReactiveSwift
 
 class HomeListTableViewCell: UITableViewCell {
+	var model: HomeListTableViewCellModel!
     
     public lazy var cellImage: UIImageView = {
         let iv = UIImageView(image: UIImage(named: "Placeholder"))
@@ -55,12 +58,15 @@ class HomeListTableViewCell: UITableViewCell {
     
     override func awakeFromNib() {
         super.awakeFromNib()
+//whenever new uiimage, uiimageview updates it's image
     }
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         backgroundColor = .clear
         setConstraints()
-        
+//		self.cellImage.reactive.image <~ self.model.venueImage
+
+
 //        backgroundColor = #colorLiteral(red: 0.2660466433, green: 0.2644712925, blue: 0.2672616839, alpha: 1)
     }
     
