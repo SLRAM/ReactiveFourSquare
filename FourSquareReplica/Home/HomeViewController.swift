@@ -176,15 +176,14 @@ extension HomeViewController: UITableViewDataSource, UITableViewDelegate{
 		let venueDistance = venueToSet.location.distance?.description ?? " "
 		cell.locationDistance.text = "Distance in meters: \(venueDistance)"
 		let addressCount = venueToSet.location.formattedAddress.count
-
-
+		cell.cellImage.reactive.image <~ cell.model.venueImage
+		cell.model.getImage() //triggers func which will update a venueImage value
 		cell.locationDescription.numberOfLines = addressCount
 		var newStr = ""
 		for str in venueToSet.location.formattedAddress {
 			newStr += str + "\n"
 		}
 		cell.locationDescription.text = newStr
-//		cell.cellImage.image = self.homeViewModel.venueImage.value //get function to run when cell is being created
 		return cell
 	}
 	func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
