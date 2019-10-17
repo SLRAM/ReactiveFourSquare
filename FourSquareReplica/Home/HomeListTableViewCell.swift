@@ -7,8 +7,10 @@
 //
 
 import UIKit
+import ReactiveCocoa
 
 class HomeListTableViewCell: UITableViewCell {
+	var model: HomeListTableViewCellModel!
     
     public lazy var cellImage: UIImageView = {
         let iv = UIImageView(image: UIImage(named: "Placeholder"))
@@ -55,6 +57,11 @@ class HomeListTableViewCell: UITableViewCell {
     
     override func awakeFromNib() {
         super.awakeFromNib()
+//whenever new uiimage, uiimageview updates it's image
+		self.cellImage.reactive.image <~ self.model.venueImage
+		self.model.getImage() //triggers func which will update a venueImage value
+
+		
     }
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)

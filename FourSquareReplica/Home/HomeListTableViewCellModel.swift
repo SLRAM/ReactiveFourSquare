@@ -11,10 +11,14 @@ import ReactiveSwift
 import CoreLocation
 import MapKit
 
-class HomeListTableViewCellViewModel {
+struct HomeListTableViewCellModel {
 	var venueImage = MutableProperty<UIImage>(UIImage())
+	let venue: Venues
+//	private let disposable = ScopedDisposable(TypedSerialDisposable<CompositeDisposable>())
 
-	func getImage(venue: Venues) {
+//	this.disposable.inner.inner += ImageLoader.shared.loadImage(type: cellModel.info.imageType, in: this.backgroundImageView)
+
+	func getImage() {
 		ImageAPIClient.getImages(venueID: venue.id) { (appError, imageInfo) in
 			if let appError = appError {
 				print(appError)

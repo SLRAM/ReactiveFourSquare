@@ -170,6 +170,7 @@ extension HomeViewController: UITableViewDataSource, UITableViewDelegate{
 	func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
 		guard let cell = homeView.myTableView.dequeueReusableCell(withIdentifier: "HomeListTableViewCell", for: indexPath) as? HomeListTableViewCell else {return UITableViewCell()}
 		let venueToSet = self.homeViewModel.venues.value[indexPath.row]
+		cell.model = HomeListTableViewCellModel(venue: venueToSet)
 		cell.locationName.text = "\(indexPath.row + 1). \(venueToSet.name)"
 		cell.locationCategory.text = venueToSet.categories.first?.name
 		let venueDistance = venueToSet.location.distance?.description ?? " "
@@ -183,7 +184,7 @@ extension HomeViewController: UITableViewDataSource, UITableViewDelegate{
 			newStr += str + "\n"
 		}
 		cell.locationDescription.text = newStr
-		cell.cellImage.image = self.homeViewModel.venueImage.value //get function to run when cell is being created
+//		cell.cellImage.image = self.homeViewModel.venueImage.value //get function to run when cell is being created
 		return cell
 	}
 	func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
