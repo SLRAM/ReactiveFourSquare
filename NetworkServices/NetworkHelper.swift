@@ -7,10 +7,17 @@
 //
 
 import Foundation
+import ReactiveSwift
 
 final class NetworkHelper {
     private init() {}
     static let shared = NetworkHelper()
+
+//	func wrappedFunction() -> SignalProducer<Data, AppError> {
+//		return SignalProducer {observer, disposable in
+//			
+//		}
+//	}
     func performDataTask(endpointURLString: String, handler: @escaping (AppError?, Data?) -> Void) {
         guard let url = URL(string: endpointURLString) else {
             handler(AppError.badURL(endpointURLString), nil)
