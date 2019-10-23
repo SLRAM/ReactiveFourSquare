@@ -8,12 +8,16 @@
 
 import UIKit
 protocol LogoViewDelegate: AnyObject {
-    func queryTerm(query: String)
+	func searchTerms(query: String, near: String)
 }
 
 class LogoView: UIView {
+	var viewModel = LogoViewModel()
+	var authStatus = LocationApplicationService.shared.status
+
     
     weak var delegate: LogoViewDelegate?
+//	var queryTerm: String
     
     public lazy var detailImageView: UIImageView = {
         let iv = UIImageView(image: UIImage(named: "7"))
@@ -42,7 +46,7 @@ class LogoView: UIView {
         }){ (done) in
             self.searchButton.transform = CGAffineTransform(scaleX: 1.0, y: 1.0)
             self.searchButton.frame.origin.y += self.bounds.height
-            self.delegate?.queryTerm(query: "")
+			self.delegate?.searchTerms(query: "", near: self.viewModel.returnNear(locationStatus: self.authStatus))//if location services are on then
         }
     }
     
@@ -66,7 +70,7 @@ class LogoView: UIView {
         UIView.transition(with: self.breakfastButton, duration: 0.5, options: [.curveEaseInOut, .transitionFlipFromRight], animations: {
             self.breakfastButton.setImage(UIImage(named: "3"), for: .normal)
         }) { (done) in
-            self.delegate?.queryTerm(query: "breakfast")
+			self.delegate?.searchTerms(query: "breakfast", near: self.viewModel.returnNear(locationStatus: self.authStatus))
         }
     }
     
@@ -84,7 +88,7 @@ class LogoView: UIView {
         UIView.transition(with: self.lunchButton, duration: 0.5, options: [.curveEaseInOut, .transitionFlipFromRight], animations: {
             self.lunchButton.setImage(UIImage(named: "1"), for: .normal)
         }) { (done) in
-            self.delegate?.queryTerm(query: "lunch")
+			self.delegate?.searchTerms(query: "lunch", near: self.viewModel.returnNear(locationStatus: self.authStatus))
         }
         
     }
@@ -103,7 +107,7 @@ class LogoView: UIView {
         UIView.transition(with: self.dinnerButton, duration: 0.5, options: [.curveEaseInOut, .transitionFlipFromRight], animations: {
             self.dinnerButton.setImage(UIImage(named: "2"), for: .normal)
         }) { (done) in
-            self.delegate?.queryTerm(query: "dinner")
+			self.delegate?.searchTerms(query: "dinner", near: self.viewModel.returnNear(locationStatus: self.authStatus))
         }
         
     }
@@ -121,7 +125,7 @@ class LogoView: UIView {
         UIView.transition(with: self.coffeeTeaButton, duration: 0.5, options: [.curveEaseInOut, .transitionFlipFromRight], animations: {
             self.coffeeTeaButton.setImage(UIImage(named: "4"), for: .normal)
         }) { (done) in
-            self.delegate?.queryTerm(query: "coffee & tea")
+			self.delegate?.searchTerms(query: "coffee & tea", near: self.viewModel.returnNear(locationStatus: self.authStatus))
         }
         
     }
@@ -139,7 +143,7 @@ class LogoView: UIView {
         UIView.transition(with: self.nightlifeButton, duration: 0.5, options: [.curveEaseInOut, .transitionFlipFromRight], animations: {
             self.nightlifeButton.setImage(UIImage(named: "5"), for: .normal)
         }) { (done) in
-            self.delegate?.queryTerm(query: "nightlife")
+			self.delegate?.searchTerms(query: "nightlife", near: self.viewModel.returnNear(locationStatus: self.authStatus))
         }
         
     }
@@ -157,7 +161,7 @@ class LogoView: UIView {
         UIView.transition(with: self.thingsButton, duration: 0.5, options: [.curveEaseInOut, .transitionFlipFromRight], animations: {
             self.thingsButton.setImage(UIImage(named: "6"), for: .normal)
         }) { (done) in
-            self.delegate?.queryTerm(query: "things to do")
+			self.delegate?.searchTerms(query: "things to do", near: self.viewModel.returnNear(locationStatus: self.authStatus))
         }
         
     }
