@@ -14,17 +14,16 @@ import MapKit
 struct HomeListTableViewCellModel {
 	var venueImage = MutableProperty<UIImage>(UIImage())
 	let venue: Venues
-	let imageAPIClient: ImageAPIClient
 //	private let disposable = ScopedDisposable(TypedSerialDisposable<CompositeDisposable>())
 
 //	this.disposable.inner.inner += ImageLoader.shared.loadImage(type: cellModel.info.imageType, in: this.backgroundImageView)
 
 	func getImage() {
-//		ImageAPIClient.wrappedFunction(imageAPIClient)
-		ImageAPIClient.wrappedFunction().startWithResult { result in
-			if let returnedString = result.value {
+	ImageAPIClient.wrappedFunction().startWithResult { result in
+			switch result {
+			case .success(let returnedString):
 				print(returnedString)
-			} else if let returnedError = result.error {
+			case .failure(let returnedError):
 				print(returnedError)
 			}
 		}

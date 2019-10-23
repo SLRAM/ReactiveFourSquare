@@ -10,7 +10,7 @@ import Foundation
 import ReactiveSwift
 
 final class ImageAPIClient {
-	func wrappedFunction() -> SignalProducer<String, AppError> {
+	static func wrappedFunction() -> SignalProducer<String, AppError> {
 		return SignalProducer {observer, disposable in
 			func getImages(venueID: String, completionHandler: @escaping ((AppError?, String?) -> Void)) {
 				let URL = "https://api.foursquare.com/v2/venues/\(venueID)/photos?client_id=\(SecretKeys.clientID)&client_secret=\(SecretKeys.clientSecret)&v=220180323&limit=1"

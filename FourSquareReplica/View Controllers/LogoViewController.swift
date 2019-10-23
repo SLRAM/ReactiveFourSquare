@@ -35,9 +35,10 @@ class LogoViewController: UIViewController {
 
 }
 extension LogoViewController: LogoViewDelegate {
-    func queryTerm(query: String) {
+	func searchTerms(query: String, near: String) {
         let detailVC = HomeViewController()
         detailVC.query = query
+		detailVC.near = near
         detailVC.userLocation = userLocation
         self.navigationController?.pushViewController(detailVC, animated: true)
     }

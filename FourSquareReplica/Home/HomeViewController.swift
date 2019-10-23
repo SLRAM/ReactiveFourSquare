@@ -22,8 +22,8 @@ class HomeViewController: UIViewController {
 
 //    private let searchbarView = SearchBarView()
 //    let testingCoordinate = CLLocationCoordinate2D.init(latitude: 40.7484, longitude: -73.9857)
-	var query : String?
-	var near = String()
+	var query: String! //better to put value in model***
+	var near: String!
 	var locationString = String()
 	var statusRawValue = Int32()
 	var userLocation : CLLocationCoordinate2D?
@@ -35,7 +35,7 @@ class HomeViewController: UIViewController {
 	override func viewDidLoad() {
 		super.viewDidLoad()
 		mapListButton()
-		setupLocation()
+//		setupLocation()
 		homeView.delegate = self
 
 		homeViewSetup()
@@ -45,46 +45,50 @@ class HomeViewController: UIViewController {
 		homeView.locationTextField.delegate = self
 		homeView.queryTextField.delegate = self
 		self.homeView.myTableView.reactive.reloadData <~ self.homeViewModel.venues.producer.map {_ in}
+		self.homeView.queryTextField.text = self.query!
+		self.homeView.locationTextField.text = self.near!
+		let nearValue = Property(initial: near, then: self.homeView.locationTextField.reactive.textValues)
+		let queryValue = Property(initial: query, then: self.homeView.queryTextField.reactive.textValues)
 		self.reactive.makeBindingTarget { (this, searchTerms) in
 
-			let (near, query) = searchTerms
-			self.homeViewModel.getVenues(near: near, query: query)
+			let (query, near) = searchTerms
+			self.homeViewModel.getVenues(near: near!, query: query!)
 			} <~ SignalProducer.combineLatest(
-				self.homeView.queryTextField.reactive.textValues,
-				self.homeView.locationTextField.reactive.textValues//combine with near
+				queryValue,
+				nearValue//combine with near
 		)
 	   // setupAnnotations()
 	}
-	func setupLocation() {
-
-		guard let userLocation = userLocation,
-			let query = query else {return}
-		switch userLocation.latitude {
-		case 0.0:
-			near = "NYC"
-			homeView.locationTextField.text = near
-			locationString = near
-			if !query.isEmpty {
-				//if user deny and no query = use near only
-				homeView.queryTextField.text = query
-			}
-			self.homeViewModel.getVenues(near: near, query: query)
-
-		default:
-			homeView.locationTextField.text = "near me"
-			homeView.locationTextField.isEnabled = false
-			homeView.nearMeButton.setImage(UIImage(named: "icons8-location_filled"), for: .normal)
-			let myCurrentRegion = MKCoordinateRegion(center: userLocation, latitudinalMeters: 9000, longitudinalMeters: 9000)
-			homeView.mapView.setRegion(myCurrentRegion, animated: true)
-
-	//            homeView.nearMeButton.backgroundColor = #colorLiteral(red: 0.4481958747, green: 0.5343003273, blue: 0.7696674466, alpha: 1)
-			if !query.isEmpty {
-				//if user accept and no query = use user location only
-				homeView.queryTextField.text = query
-			}
-			self.homeViewModel.getVenues(near: "", query: query)
-		}
-	}
+//	func setupLocation() {
+//
+//		guard let userLocation = userLocation,
+//			let query = query else {return}
+//		switch userLocation.latitude {
+//		case 0.0:
+//			near = "NYC"
+//			homeView.locationTextField.text = near
+//			locationString = near
+//			if !query.isEmpty {
+//				//if user deny and no query = use near only
+//				homeView.queryTextField.text = query
+//			}
+//			self.homeViewModel.getVenues(near: near, query: query)
+//
+//		default:
+//			homeView.locationTextField.text = "near me"
+//			homeView.locationTextField.isEnabled = false
+//			homeView.nearMeButton.setImage(UIImage(named: "icons8-location_filled"), for: .normal)
+//			let myCurrentRegion = MKCoordinateRegion(center: userLocation, latitudinalMeters: 9000, longitudinalMeters: 9000)
+//			homeView.mapView.setRegion(myCurrentRegion, animated: true)
+//
+//	//            homeView.nearMeButton.backgroundColor = #colorLiteral(red: 0.4481958747, green: 0.5343003273, blue: 0.7696674466, alpha: 1)
+//			if !query.isEmpty {
+//				//if user accept and no query = use user location only
+//				homeView.queryTextField.text = query
+//			}
+//			self.homeViewModel.getVenues(near: "", query: query)
+//		}
+//	}
 	func setupAnnotations(){
 		var count = 0
 
@@ -257,8 +261,7 @@ extension HomeViewController: UITextFieldDelegate {
             print("location: \(String(describing: textField.text))")
             locationString = textField.text ?? ""
         }
-        if let query = query,
-            let userLocation = userLocation {
+		if let userLocation = userLocation {
 			self.homeViewModel.getVenues(near: locationString, query: query)
 //           getVenues(userLocation: userLocation, near: locationString, query: query)
             setupAnnotations()
@@ -294,7 +297,7 @@ extension HomeViewController: HomeViewDelegate {
 				print("highlighted")
 				homeView.locationTextField.text = "near me"
 				homeView.locationTextField.isEnabled = false
-				guard let query = query else {return}
+
 				self.homeViewModel.getVenues(near: "", query: query)
 //                getVenues(userLocation: updatedUserLocation, near: "", query: query)
 			} else {
