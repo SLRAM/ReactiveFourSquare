@@ -10,7 +10,7 @@ import UIKit
 
 class TipViewController: UIViewController {
 
-    var tipDetail: Venues!
+    var tipDetail: Venue!
     
     private var itemTitlePlaceHolder = "What did you like about this place? any suggestions or recommendation"
     //private var itemDescriptionPlaceHolder = "Item Description"

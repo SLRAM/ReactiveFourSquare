@@ -12,7 +12,7 @@ import MapKit
 final class FourSquareAPI {
     
     private init() {}
-    static func searchFourSquare(userLocation: CLLocationCoordinate2D, near: String, query: String, completionHandler: @escaping (AppError?, [Venues]?) -> Void) {
+    static func searchFourSquare(userLocation: CLLocationCoordinate2D, near: String, query: String, completionHandler: @escaping (AppError?, [Venue]?) -> Void) {
         //ll= if user allows us to use thier location info or near= if they deny/search by place
         let searchQuery = query.replacingOccurrences(of: " ", with: "-")
         let searchNear = near.replacingOccurrences(of: " ", with: "-")

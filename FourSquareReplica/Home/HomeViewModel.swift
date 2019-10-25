@@ -13,9 +13,8 @@ import MapKit
 
 class HomeViewModel {
 //	var homeView = HomeView() DO NOT REFER TO IN VIEW MODEL
-	var venues = MutableProperty<[Venues]>([])
-//	var query = MutableProperty<String>("")
-//	var near = MutableProperty<String>("")
+	var venues = MutableProperty<[Venue]>([])
+	
 	var authStatus = LocationApplicationService.shared.status
 
 
@@ -30,7 +29,11 @@ class HomeViewModel {
 	}
 
 	func numberOfRowsInSection() -> Int {
-		return venues.value.count
+		return self.venues.value.count
+	}
+	func venuesAtIndex(_ index: Int) -> HomeListTableViewCellModel {
+		let venue = self.venues.value[index]
+		return HomeListTableViewCellModel(venue: venue)
 	}
 
 }

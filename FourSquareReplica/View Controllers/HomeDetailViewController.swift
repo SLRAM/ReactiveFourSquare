@@ -12,7 +12,7 @@ import MapKit
 class HomeDetailViewController: UIViewController {
 
     let homeDetailView = HomeDetailView()
-    var venue: Venues?
+    var venue: Venue?
     
     override func viewDidLoad() {
         super.viewDidLoad()

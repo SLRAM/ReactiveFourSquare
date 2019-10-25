@@ -13,41 +13,51 @@ import MapKit
 
 struct HomeListTableViewCellModel {
 	var venueImage = MutableProperty<UIImage>(UIImage())
-	let venue: Venues
-//	private let disposable = ScopedDisposable(TypedSerialDisposable<CompositeDisposable>())
-
-//	this.disposable.inner.inner += ImageLoader.shared.loadImage(type: cellModel.info.imageType, in: this.backgroundImageView)
+	private let venue: Venue
+	
+	var venueName: String {
+		return self.venue.name
+	}
+	var venueCategory: String? {
+		return self.venue.categories.first?.name
+	}
+	var venueDistance: String {
+		return "Distance in meters: \(self.venue.location.distance?.description ?? "")"
+	}
+	var venueDescription: String {
+		var formattedVenueDescription = ""
+		for str in self.venue.location.formattedAddress {
+			formattedVenueDescription += str + "\n"
+		}
+		return formattedVenueDescription
+	}
+	var venueDescriptionLineCount: Int {
+		return self.venue.location.formattedAddress.count
+	}
+	
+	init(venue: Venue) {
+		self.venue = venue
+	}
 
 	func getImage() {
-	ImageAPIClient.wrappedFunction().startWithResult { result in
-			switch result {
-			case .success(let returnedString):
-				print(returnedString)
-			case .failure(let returnedError):
-				print(returnedError)
+		
+		ImageAPIClient.wrappedFunction().startWithResult { result in
+			
+				switch result {
+				case .success(let returnedString):
+					print(returnedString)
+				case .failure(let returnedError):
+					print(returnedError)
+
+				}
 			}
-		}
-
-
-
-
-
-
-
-
-//		ImageAPIClient.getImages(venueID: venue.id) { (appError, imageInfo) in
-//			if let appError = appError {
-//				print(appError)
-//			}else if let imageInfo = imageInfo {
-//				ImageHelper.fetchImageFromNetwork(urlString: imageInfo, completion: { (appError, image) in
-//					if let appError = appError {
-//						print("imageHelper error - \(appError)")
-//					} else if let image = image {
-//						self.venueImage.value = image
-//					}
-//				})
-//			}
-//		}
-
 	}
+	
+//	ImageHelper.fetchImageFromNetwork(urlString: imageInfo, completion: { (appError, image) in
+//		if let appError = appError {
+//			print("imageHelper error - \(appError)")
+//		} else if let image = image {
+//			cell.cellImage.image = image
+//		}
+//	})
 }

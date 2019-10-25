@@ -182,21 +182,16 @@ extension HomeViewController: UITableViewDataSource, UITableViewDelegate{
 
 	func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
 		guard let cell = homeView.myTableView.dequeueReusableCell(withIdentifier: "HomeListTableViewCell", for: indexPath) as? HomeListTableViewCell else {return UITableViewCell()}
-		let venueToSet = self.homeViewModel.venues.value[indexPath.row]
-		cell.model = HomeListTableViewCellModel(venue: venueToSet)
-		cell.locationName.text = "\(indexPath.row + 1). \(venueToSet.name)"
-		cell.locationCategory.text = venueToSet.categories.first?.name
-		let venueDistance = venueToSet.location.distance?.description ?? " "
-		cell.locationDistance.text = "Distance in meters: \(venueDistance)"
-		let addressCount = venueToSet.location.formattedAddress.count
+		
+		let venueVM = self.homeViewModel.venuesAtIndex(indexPath.row)
+		cell.model = venueVM
+		cell.locationName.text = "\(indexPath.row + 1). \(venueVM.venueName)"
+		cell.locationDistance.text = venueVM.venueDistance
+		cell.locationDescription.numberOfLines = venueVM.venueDescriptionLineCount
+		cell.locationDescription.text = venueVM.venueDescription
+// images not returning***
 		cell.cellImage.reactive.image <~ cell.model.venueImage
 		cell.model.getImage() //triggers func which will update a venueImage value
-		cell.locationDescription.numberOfLines = addressCount
-		var newStr = ""
-		for str in venueToSet.location.formattedAddress {
-			newStr += str + "\n"
-		}
-		cell.locationDescription.text = newStr
 		return cell
 	}
 	func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
