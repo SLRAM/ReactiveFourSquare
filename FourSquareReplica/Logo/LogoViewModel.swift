@@ -17,6 +17,7 @@ class LogoViewModel {
 //		case searchTerm
 //		case empty
 //	}
+    var userLocation = CLLocationCoordinate2D()
 
 	func returnNear(locationStatus: CLAuthorizationStatus)-> String {
 

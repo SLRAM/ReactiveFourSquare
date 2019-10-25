@@ -7,13 +7,17 @@
 //
 
 import UIKit
+import CoreLocation
+
 protocol LogoViewDelegate: AnyObject {
 	func searchTerms(query: String, near: String)
 }
 
 class LogoView: UIView {
 	var viewModel = LogoViewModel()
-	var authStatus = LocationApplicationService.shared.status
+	var authStatus: CLAuthorizationStatus {
+		return LocationApplicationService.shared.status
+	}
 
     
     weak var delegate: LogoViewDelegate?

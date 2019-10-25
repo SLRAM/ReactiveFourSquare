@@ -52,6 +52,7 @@ extension LocationApplicationService: CLLocationManagerDelegate {
 		case .authorizedAlways, .authorizedWhenInUse:
 			clLocationManager.startUpdatingLocation()
 			clLocationManager.desiredAccuracy = kCLLocationAccuracyBest
+			self.currentLocation = clLocationManager.location?.coordinate
 		default:
 			print("Unhandled case in locationManager didChangeAuthorization")
 			clLocationManager.requestWhenInUseAuthorization()
