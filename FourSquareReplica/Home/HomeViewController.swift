@@ -13,6 +13,8 @@ import ReactiveSwift
 
 class HomeViewController: UIViewController {
 
+//	private var homeView = HomeView()
+	private var homeViewModel = HomeViewModel()
 
 	private let mapKitView = MapView()
 //	let mapViewModel = ?
@@ -49,6 +51,26 @@ class HomeViewController: UIViewController {
 		self.searchBarView.locationTextField.text = self.near!
 		let nearValue = Property(initial: near, then: self.searchBarView.locationTextField.reactive.textValues)
 		let queryValue = Property(initial: query, then: self.searchBarView.queryTextField.reactive.textValues)
+//the properties for binding are nav title, remove view, add view
+		self.reactive.makeBindingTarget { (this, state) in
+				self.navigationItem.rightBarButtonItem?.title = state.toggleTitle
+				switch state {
+				case .mapView:
+					UIView.animate(withDuration: 0.5, delay: 0.0, options: [], animations: {
+						if self.tableView.isDescendant(of: self.view) {
+							self.tableView.removeFromSuperview()
+						}
+						self.setupMapView()
+					})
+				case .listView:
+					UIView.animate(withDuration: 0.5, delay: 0.0, options: [], animations: {
+						if self.mapKitView.isDescendant(of: self.view) {
+							self.mapKitView.removeFromSuperview()
+						}
+						self.setupTableView()
+					})
+				}
+			} <~ self.homeViewModel.state.producer
 
 		self.reactive.makeBindingTarget { (this, searchTerms) in
 
@@ -126,7 +148,7 @@ class HomeViewController: UIViewController {
 	}
 
 	@objc func toggle() {
-		print("pressed toggle")
+		print("pressed toggle")//edit toggle to account or adjust state
 		switch tableViewModel.authStatus {
 		case .notDetermined, .restricted, .denied:
 			if (self.searchBarView.locationTextField.text?.isEmpty)! {

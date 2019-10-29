@@ -12,6 +12,9 @@ import CoreLocation
 import MapKit
 
 class HomeViewModel {
+	var state = MutableProperty(ViewState.listView)
+
+
 	enum ViewState {
 		case listView
 		case mapView
