@@ -25,7 +25,7 @@ class LogoViewModel {
 		case .notDetermined, .restricted, .denied:
 			return ""
 		case .authorizedAlways, .authorizedWhenInUse:
-			return "near me"
+			return "near me"//code doesn't need "near" for API, if no text is present then it searches with location service lat log
 		default:
 			print("Unhandled case in returnNear location status")
 			return ""

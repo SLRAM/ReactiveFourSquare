@@ -1,5 +1,5 @@
 //
-//  HomeListTableViewCellViewModel.swift
+//  TableViewCellViewModel.swift
 //  FourSquareReplica
 //
 //  Created by Stephanie Ramirez on 10/15/19.
@@ -11,32 +11,26 @@ import ReactiveSwift
 import CoreLocation
 import MapKit
 
-struct HomeListTableViewCellModel {
+struct TableViewCellModel {
 	var venueImage = MutableProperty<UIImage>(UIImage())
-	private let venue: Venue
+//	private let venue: Venue
 	
-	var venueName: String {
-		return self.venue.name
-	}
-	var venueCategory: String? {
-		return self.venue.categories.first?.name
-	}
-	var venueDistance: String {
-		return "Distance in meters: \(self.venue.location.distance?.description ?? "")"
-	}
-	var venueDescription: String {
-		var formattedVenueDescription = ""
-		for str in self.venue.location.formattedAddress {
-			formattedVenueDescription += str + "\n"
-		}
-		return formattedVenueDescription
-	}
-	var venueDescriptionLineCount: Int {
-		return self.venue.location.formattedAddress.count
-	}
+	let venueName: String
+	let venueCategory: String?
+	let venueDistance: String
+	let venueDescription: String
+	let venueDescriptionLineCount: Int
 	
 	init(venue: Venue) {
-		self.venue = venue
+		self.venueName = venue.name
+		self.venueCategory = venue.categories.first?.name
+		self.venueDistance = "Distance in meters: \(venue.location.distance?.description ?? "")"
+		var formattedVenueDescription = ""
+		for str in venue.location.formattedAddress {
+			formattedVenueDescription += str + "\n"
+		}
+		self.venueDescription = formattedVenueDescription
+		self.venueDescriptionLineCount = venue.location.formattedAddress.count
 	}
 
 	func getImage() {

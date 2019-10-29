@@ -2,7 +2,7 @@
 //  HomeViewModel.swift
 //  FourSquareReplica
 //
-//  Created by Stephanie Ramirez on 9/27/19.
+//  Created by Stephanie Ramirez on 10/29/19.
 //  Copyright © 2019 Stephanie Ramirez. All rights reserved.
 //
 
@@ -12,28 +12,17 @@ import CoreLocation
 import MapKit
 
 class HomeViewModel {
-//	var homeView = HomeView() DO NOT REFER TO IN VIEW MODEL
-	var venues = MutableProperty<[Venue]>([])
-	
-	var authStatus = LocationApplicationService.shared.status
+	enum ViewState {
+		case listView
+		case mapView
 
-
-	func getVenues(near: String, query: String) {
-		FourSquareAPI.searchFourSquare(userLocation: LocationApplicationService.shared.currentLocation ?? CLLocationCoordinate2D(latitude: 40.781594, longitude: -73.965816), near: near, query: query) { [weak self] (appError, venues) in
-			if let appError = appError {
-			print("getVenue - \(appError)")
-		} else if let venues = venues {
-			self?.venues.value = venues
+		var toggleTitle: String {
+			switch self {
+			case .listView:
+				return "Map"
+			case .mapView:
+				return "List"
 			}
 		}
 	}
-
-	func numberOfRowsInSection() -> Int {
-		return self.venues.value.count
-	}
-	func venuesAtIndex(_ index: Int) -> HomeListTableViewCellModel {
-		let venue = self.venues.value[index]
-		return HomeListTableViewCellModel(venue: venue)
-	}
-
 }

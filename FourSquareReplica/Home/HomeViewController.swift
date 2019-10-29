@@ -14,14 +14,19 @@ import ReactiveSwift
 class HomeViewController: UIViewController {
 
 
-	private let homeView = HomeView()
-	let homeViewModel = HomeViewModel()
+	private let mapKitView = MapView()
+//	let mapViewModel = ?
+
+	private let searchBarView = SearchBarView()
+//	let searchBarModel = ?
+
+	private let tableView = TableView()
+	let tableViewModel = TableViewModel()
+
+
 	public let identifer = "marker"
-	private let homeListView = HomeListView()
 
 
-//    private let searchbarView = SearchBarView()
-//    let testingCoordinate = CLLocationCoordinate2D.init(latitude: 40.7484, longitude: -73.9857)
 	var query: String! //better to put value in model***
 	var near: String!
 	var locationString = String()
@@ -34,29 +39,29 @@ class HomeViewController: UIViewController {
 
 	override func viewDidLoad() {
 		super.viewDidLoad()
-		mapListButton()
+		self.mapListButton()
 //		setupLocation()
-		homeView.delegate = self
-
-		homeViewSetup()
 	//        centerOnMap(location: initialLocation)
-		homeView.mapView.delegate = self
 
-		homeView.locationTextField.delegate = self
-		homeView.queryTextField.delegate = self
-		self.homeView.myTableView.reactive.reloadData <~ self.homeViewModel.venues.producer.map {_ in}
-		self.homeView.queryTextField.text = self.query!
-		self.homeView.locationTextField.text = self.near!
-		let nearValue = Property(initial: near, then: self.homeView.locationTextField.reactive.textValues)
-		let queryValue = Property(initial: query, then: self.homeView.queryTextField.reactive.textValues)
+
+		self.tableView.reactive.reloadData <~ self.tableViewModel.venues.producer.map {_ in}
+		self.searchBarView.queryTextField.text = self.query!
+		self.searchBarView.locationTextField.text = self.near!
+		let nearValue = Property(initial: near, then: self.searchBarView.locationTextField.reactive.textValues)
+		let queryValue = Property(initial: query, then: self.searchBarView.queryTextField.reactive.textValues)
+
 		self.reactive.makeBindingTarget { (this, searchTerms) in
 
 			let (query, near) = searchTerms
-			self.homeViewModel.getVenues(near: near!, query: query!)
+			near == "near me" ? self.tableViewModel.getVenues(near: "", query: query!) : self.tableViewModel.getVenues(near: near!, query: query!)
+//			self.tableViewModel.getVenues(near: near!, query: query!)
+//			print("number of rows: \(self.tableViewModel.numberOfRowsInSection())")
 			} <~ SignalProducer.combineLatest(
 				queryValue,
 				nearValue//combine with near
 		)
+		self.homeViewControllerSetup()
+
 	   // setupAnnotations()
 	}
 //	func setupLocation() {
@@ -89,32 +94,32 @@ class HomeViewController: UIViewController {
 //			self.homeViewModel.getVenues(near: "", query: query)
 //		}
 //	}
-	func setupAnnotations(){
-		var count = 0
-
-		self.homeView.mapView.removeAnnotations(self.homeView.mapView.annotations)
-		for venue in self.homeViewModel.venues.value {
-
-			print("venue number: \(count)")
-			let regionRadius: CLLocationDistance = 9000
-			let coordinate = CLLocationCoordinate2D.init(latitude: venue.location.lat!, longitude: venue.location.lng!)
-			let coordinateRegion = MKCoordinateRegion.init(center: coordinate, latitudinalMeters: regionRadius, longitudinalMeters: regionRadius)
-	//            let annotation = MKPointAnnotation()
-			let annotation = MyAnnotation()
-			annotation.coordinate = coordinate
-			annotation.title = venue.name
-			annotation.subtitle = venue.location.address
-			annotation.tag = count
-
-			homeView.mapView.setRegion(coordinateRegion, animated: true)
-			homeView.mapView.addAnnotation(annotation)
-			count += 1
-
-		}
-		let myCurrentRegion = MKCoordinateRegion(center: self.homeViewModel.venues.value[0].location.coordinate, latitudinalMeters: 9000, longitudinalMeters: 9000)
-		homeView.mapView.setRegion(myCurrentRegion, animated: true)
-
-	}
+//	func setupAnnotations(){
+//		var count = 0
+//
+//		self.homeView.mapView.removeAnnotations(self.homeView.mapView.annotations)
+//		for venue in self.homeViewModel.venues.value {
+//
+//			print("venue number: \(count)")
+//			let regionRadius: CLLocationDistance = 9000
+//			let coordinate = CLLocationCoordinate2D.init(latitude: venue.location.lat!, longitude: venue.location.lng!)
+//			let coordinateRegion = MKCoordinateRegion.init(center: coordinate, latitudinalMeters: regionRadius, longitudinalMeters: regionRadius)
+//	//            let annotation = MKPointAnnotation()
+//			let annotation = MyAnnotation()
+//			annotation.coordinate = coordinate
+//			annotation.title = venue.name
+//			annotation.subtitle = venue.location.address
+//			annotation.tag = count
+//
+//			homeView.mapView.setRegion(coordinateRegion, animated: true)
+//			homeView.mapView.addAnnotation(annotation)
+//			count += 1
+//
+//		}
+//		let myCurrentRegion = MKCoordinateRegion(center: self.homeViewModel.venues.value[0].location.coordinate, latitudinalMeters: 9000, longitudinalMeters: 9000)
+//		homeView.mapView.setRegion(myCurrentRegion, animated: true)
+//
+//	}
 
 	func mapListButton() {
 		navigationItem.rightBarButtonItem = UIBarButtonItem.init(title: "Map", style: .plain, target: self, action: #selector(toggle))
@@ -122,9 +127,9 @@ class HomeViewController: UIViewController {
 
 	@objc func toggle() {
 		print("pressed toggle")
-		switch homeViewModel.authStatus {
+		switch tableViewModel.authStatus {
 		case .notDetermined, .restricted, .denied:
-			if (homeView.locationTextField.text?.isEmpty)! {
+			if (self.searchBarView.locationTextField.text?.isEmpty)! {
 				let alertController = UIAlertController(title: "Please provide a search location or allow this app access to your location to see this feature.", message: nil, preferredStyle: .alert)
 				let okAction = UIAlertAction(title: "OK", style: .default, handler: nil)
 				let settingsAction = UIAlertAction(title: "Open Settings", style: .default, handler: { (action) -> Void in
@@ -143,7 +148,7 @@ class HomeViewController: UIViewController {
 				} else {
 					navigationItem.rightBarButtonItem?.title = "List"
 				}
-				homeViewSetup()
+				homeViewControllerSetup()
 			}
 		case .authorizedAlways, .authorizedWhenInUse:
 			if navigationItem.rightBarButtonItem?.title == "List" {
@@ -151,39 +156,74 @@ class HomeViewController: UIViewController {
 			} else {
 				navigationItem.rightBarButtonItem?.title = "List"
 			}
-			homeViewSetup()
+			homeViewControllerSetup()
 		default:
 			print("Unhandled case in locationManager for map/list toggle pressed")
 		}
 	}
-	func homeViewSetup() {
-		view.addSubview(homeView)
-		homeView.myTableView.delegate = self
-		homeView.myTableView.dataSource = self
-
-		if navigationItem.rightBarButtonItem?.title == "Map" {
+	func homeViewControllerSetup() {
+		setupSearchBarView()
+		if navigationItem.rightBarButtonItem?.title == "Map" {//homevm should have a state on which to show: map or tableview
 			UIView.animate(withDuration: 0.5, delay: 0.0, options: [], animations: {
-				self.homeView.mapView.alpha = 0.0
+				if self.mapKitView.isDescendant(of: self.view) {
+					self.mapKitView.removeFromSuperview()
+				}
+				self.setupTableView()
 			})
 		} else {
 			UIView.animate(withDuration: 0.5, delay: 0.0, options: [], animations: {
-				self.homeView.mapView.alpha = 1.0
+				if self.tableView.isDescendant(of: self.view) {
+					self.tableView.removeFromSuperview()
+				}
+				self.setupMapView()
+
+
 			})
-			self.view.addSubview(homeView)
-			setupAnnotations()
-			homeView.reloadInputViews()
+
 		}
 	}
+	func setupSearchBarView() {
+		self.searchBarView.delegate = self
+		self.searchBarView.locationTextField.delegate = self
+		self.searchBarView.queryTextField.delegate = self
+		self.view.addSubview(searchBarView)
+		self.searchBarView.translatesAutoresizingMaskIntoConstraints = false
+		self.searchBarView.topAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.topAnchor).isActive = true
+		self.searchBarView.leadingAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.leadingAnchor).isActive = true
+		self.searchBarView.trailingAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.trailingAnchor).isActive = true
+		self.searchBarView.heightAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.heightAnchor, multiplier: 0.08).isActive = true
+	}
+	func setupTableView() {
+		self.tableView.delegate = self
+		self.tableView.dataSource = self
+		self.view.addSubview(tableView)
+		self.tableView.translatesAutoresizingMaskIntoConstraints = false
+		self.tableView.heightAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.heightAnchor, multiplier: 0.92).isActive = true
+		self.tableView.leadingAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.leadingAnchor).isActive = true
+		self.tableView.trailingAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.trailingAnchor).isActive = true
+		self.tableView.bottomAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.bottomAnchor).isActive = true
+	}
+	func setupMapView() {
+		mapKitView.mapView.delegate = self
+		self.view.addSubview(mapKitView)
+		self.mapKitView.translatesAutoresizingMaskIntoConstraints = false
+		self.mapKitView.topAnchor.constraint(equalTo: self.searchBarView.bottomAnchor).isActive = true
+//		self.mapKitView.heightAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.heightAnchor, multiplier: 0.92).isActive = true
+		self.mapKitView.leadingAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.leadingAnchor).isActive = true
+		self.mapKitView.trailingAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.trailingAnchor).isActive = true
+		self.mapKitView.bottomAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.bottomAnchor).isActive = true
+	}
+
 }
 extension HomeViewController: UITableViewDataSource, UITableViewDelegate{
 	func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-		return self.homeViewModel.numberOfRowsInSection()
+		return self.tableViewModel.numberOfRowsInSection()
 	}
 
 	func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-		guard let cell = homeView.myTableView.dequeueReusableCell(withIdentifier: "HomeListTableViewCell", for: indexPath) as? HomeListTableViewCell else {return UITableViewCell()}
+		guard let cell = self.tableView.dequeueReusableCell(withIdentifier: "TableViewCell", for: indexPath) as? TableViewCell else {return UITableViewCell()}
 		
-		let venueVM = self.homeViewModel.venuesAtIndex(indexPath.row)
+		let venueVM = self.tableViewModel.venuesAtIndex(indexPath.row)
 		cell.model = venueVM
 		cell.locationName.text = "\(indexPath.row + 1). \(venueVM.venueName)"
 		cell.locationDistance.text = venueVM.venueDistance
@@ -195,8 +235,8 @@ extension HomeViewController: UITableViewDataSource, UITableViewDelegate{
 		return cell
 	}
 	func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-		guard let selectedCell = homeView.myTableView.cellForRow(at: indexPath) as? HomeListTableViewCell else {return}
-		let venue = self.homeViewModel.venues.value[indexPath.row]
+		guard let selectedCell = self.tableView.cellForRow(at: indexPath) as? TableViewCell else {return}
+		let venue = self.tableViewModel.venues.value[indexPath.row]
 		let detailVC = HomeDetailViewController()
 		detailVC.venue = venue
 		detailVC.homeDetailView.detailImageView.image = selectedCell.cellImage.image
@@ -229,7 +269,7 @@ extension HomeViewController: MKMapViewDelegate{
 
 		let destinationVC = HomeDetailViewController()
 
-		let venue = self.homeViewModel.venues.value[myViewAnnotation.tag]
+		let venue = self.tableViewModel.venues.value[myViewAnnotation.tag]
 		destinationVC.venue = venue
 	//        destinationVC.homeDetailView.detailImageView.image = selectedCell.cellImage.image
 
@@ -247,30 +287,31 @@ extension HomeViewController: UITextFieldDelegate {
         return true
     }
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
-        if textField == homeView.queryTextField {
+		if textField == self.searchBarView.queryTextField {
             print("query: \(String(describing: textField.text))")
             //guard for textfield stuff
             query = textField.text ?? ""
         }
-        if textField == homeView.locationTextField {
+		if textField == self.searchBarView.locationTextField {
             print("location: \(String(describing: textField.text))")
             locationString = textField.text ?? ""
         }
 		if let userLocation = userLocation {
-			self.homeViewModel.getVenues(near: locationString, query: query)
+			self.tableViewModel.getVenues(near: locationString, query: query)
 //           getVenues(userLocation: userLocation, near: locationString, query: query)
-            setupAnnotations()
+//            setupAnnotations()
         }
         
         textField.resignFirstResponder()
-        homeView.mapView.reloadInputViews()
+		mapKitView.mapView.reloadInputViews()
         return true
     }
 }
 
-extension HomeViewController: HomeViewDelegate {
+extension HomeViewController: SearchBarViewDelegate {
+	//this logic can go in vm
     func userLocationButton() {
-		switch homeViewModel.authStatus {
+		switch tableViewModel.authStatus {
 		case .notDetermined, .restricted, .denied:
             let alertController = UIAlertController(title: "Please allow this app to access your user location in settings to enable this feature.", message: nil, preferredStyle: .alert)
             let okAction = UIAlertAction(title: "OK", style: .default, handler: nil)
@@ -285,22 +326,22 @@ extension HomeViewController: HomeViewDelegate {
             alertController.addAction(settingsAction)
             present(alertController, animated: true)
 		case .authorizedAlways, .authorizedWhenInUse:
-			if homeView.nearMeButton.currentImage == UIImage(named: "icons8-marker") {
+			if searchBarView.nearMeButton.currentImage == UIImage(named: "icons8-marker") {
 //            if homeView.nearMeButton.backgroundColor == #colorLiteral(red: 0.6193930507, green: 0.7189580798, blue: 0.9812330604, alpha: 1)  {
-				homeView.nearMeButton.setImage(UIImage(named: "icons8-location_filled"), for: .normal)
+				searchBarView.nearMeButton.setImage(UIImage(named: "icons8-location_filled"), for: .normal)
 //                homeView.nearMeButton.backgroundColor = #colorLiteral(red: 0.4481958747, green: 0.5343003273, blue: 0.7696674466, alpha: 1)
 				print("highlighted")
-				homeView.locationTextField.text = "near me"
-				homeView.locationTextField.isEnabled = false
+				searchBarView.locationTextField.text = "near me"
+				searchBarView.locationTextField.isEnabled = false
 
-				self.homeViewModel.getVenues(near: "", query: query)
+//				self.tableViewModel.getVenues(near: "", query: query)
 //                getVenues(userLocation: updatedUserLocation, near: "", query: query)
 			} else {
-				homeView.nearMeButton.setImage(UIImage(named: "icons8-marker"), for: .normal)
+				searchBarView.nearMeButton.setImage(UIImage(named: "icons8-marker"), for: .normal)
 //                homeView.nearMeButton.backgroundColor = #colorLiteral(red: 0.6193930507, green: 0.7189580798, blue: 0.9812330604, alpha: 1)
-				homeView.locationTextField.isEnabled = true
-				homeView.locationTextField.text = ""
-				homeView.locationTextField.placeholder = "ex. Miami"
+				searchBarView.locationTextField.isEnabled = true
+				searchBarView.locationTextField.text = ""
+				searchBarView.locationTextField.placeholder = "ex. Miami"
 				print("not highlighted")
 			}
 		default:

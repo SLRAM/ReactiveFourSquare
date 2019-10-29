@@ -17,12 +17,12 @@ import ReactiveSwift
 final class LocationApplicationService: NSObject, ApplicationService {
 	static let shared = LocationApplicationService()
 	var status : CLAuthorizationStatus
-	var currentLocation: CLLocationCoordinate2D?//change to mutable property
+	static var currentLocation: CLLocationCoordinate2D?//change to mutable property
 
 	private lazy var clLocationManager = CLLocationManager()
 
 	override private init() {
-		self.currentLocation = nil
+		LocationApplicationService.self.currentLocation = nil
 		self.status = .notDetermined
 		super.init()
 		self.setupLocationManager()
@@ -38,7 +38,7 @@ extension LocationApplicationService: CLLocationManagerDelegate {
 	func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
 		print("user has changed locations")
 		guard let currentLocation = locations.last else {return}
-		self.currentLocation = currentLocation.coordinate
+		LocationApplicationService.self.currentLocation = currentLocation.coordinate
 		print("The user is in lat: \(currentLocation.coordinate.latitude) and long:\(currentLocation.coordinate.longitude)")
 	}
 
@@ -47,12 +47,12 @@ extension LocationApplicationService: CLLocationManagerDelegate {
 		self.status = status
 		switch status {
 		case .notDetermined, .restricted, .denied:
-			self.currentLocation = nil
+			LocationApplicationService.self.currentLocation = nil
 			clLocationManager.requestWhenInUseAuthorization()
 		case .authorizedAlways, .authorizedWhenInUse:
 			clLocationManager.startUpdatingLocation()
 			clLocationManager.desiredAccuracy = kCLLocationAccuracyBest
-			self.currentLocation = clLocationManager.location?.coordinate
+			LocationApplicationService.self.currentLocation = clLocationManager.location?.coordinate
 		default:
 			print("Unhandled case in locationManager didChangeAuthorization")
 			clLocationManager.requestWhenInUseAuthorization()

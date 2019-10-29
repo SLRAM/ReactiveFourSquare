@@ -27,7 +27,7 @@ class HomeMapView: UIView {
         commonInit()
     }
     private func commonInit(){
-        backgroundColor = .white
+//        backgroundColor = .white
         setupViews()
     }
    private func setupViews(){

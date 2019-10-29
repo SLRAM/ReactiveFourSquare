@@ -21,7 +21,6 @@ final class FourSquareAPI {
             userLocationAdded = "ll=\(userLocation.latitude),\(userLocation.longitude)"
         }
         let endpointURLString = "https://api.foursquare.com/v2/venues/search?client_id=\(SecretKeys.clientID)&client_secret=\(SecretKeys.clientSecret)&v=20180323&limit=10&\(userLocationAdded)&near=\(searchNear)&query=\(searchQuery)"
-//        print(endpointURLString)
         NetworkHelper.shared.performDataTask(endpointURLString: endpointURLString) { (appError, data) in
             if let appError = appError {
                 completionHandler(appError, nil)
