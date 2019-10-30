@@ -14,7 +14,7 @@ import ReactiveSwift
 class HomeViewController: UIViewController {
 
 //	private var homeView = HomeView()
-	private var homeViewModel = HomeViewModel()
+	var homeViewModel: HomeViewModel!
 
 	private let mapKitView = MapView()
 //	let mapViewModel = ?
@@ -29,8 +29,6 @@ class HomeViewController: UIViewController {
 	public let identifer = "marker"
 
 
-	var query: String! //better to put value in model***
-	var near: String!
 	var locationString = String()
 	var statusRawValue = Int32()
 	var userLocation : CLLocationCoordinate2D?
@@ -44,44 +42,6 @@ class HomeViewController: UIViewController {
 		self.mapListButton()
 //		setupLocation()
 	//        centerOnMap(location: initialLocation)
-
-
-		self.tableView.reactive.reloadData <~ self.tableViewModel.venues.producer.map {_ in}
-		self.searchBarView.queryTextField.text = self.query!
-		self.searchBarView.locationTextField.text = self.near!
-		let nearValue = Property(initial: near, then: self.searchBarView.locationTextField.reactive.textValues)
-		let queryValue = Property(initial: query, then: self.searchBarView.queryTextField.reactive.textValues)
-//the properties for binding are nav title, remove view, add view
-		self.reactive.makeBindingTarget { (this, state) in
-				self.navigationItem.rightBarButtonItem?.title = state.toggleTitle
-				switch state {
-				case .mapView:
-					UIView.animate(withDuration: 0.5, delay: 0.0, options: [], animations: {
-						if self.tableView.isDescendant(of: self.view) {
-							self.tableView.removeFromSuperview()
-						}
-						self.setupMapView()
-					})
-				case .listView:
-					UIView.animate(withDuration: 0.5, delay: 0.0, options: [], animations: {
-						if self.mapKitView.isDescendant(of: self.view) {
-							self.mapKitView.removeFromSuperview()
-						}
-						self.setupTableView()
-					})
-				}
-			} <~ self.homeViewModel.state.producer
-
-		self.reactive.makeBindingTarget { (this, searchTerms) in
-
-			let (query, near) = searchTerms
-			near == "near me" ? self.tableViewModel.getVenues(near: "", query: query!) : self.tableViewModel.getVenues(near: near!, query: query!)
-//			self.tableViewModel.getVenues(near: near!, query: query!)
-//			print("number of rows: \(self.tableViewModel.numberOfRowsInSection())")
-			} <~ SignalProducer.combineLatest(
-				queryValue,
-				nearValue//combine with near
-		)
 		self.homeViewControllerSetup()
 
 	   // setupAnnotations()
@@ -149,60 +109,54 @@ class HomeViewController: UIViewController {
 
 	@objc func toggle() {
 		print("pressed toggle")//edit toggle to account or adjust state
-		switch tableViewModel.authStatus {
-		case .notDetermined, .restricted, .denied:
-			if (self.searchBarView.locationTextField.text?.isEmpty)! {
-				let alertController = UIAlertController(title: "Please provide a search location or allow this app access to your location to see this feature.", message: nil, preferredStyle: .alert)
-				let okAction = UIAlertAction(title: "OK", style: .default, handler: nil)
-				let settingsAction = UIAlertAction(title: "Open Settings", style: .default, handler: { (action) -> Void in
-					if let url = URL(string:UIApplication.openSettingsURLString) {
-						if UIApplication.shared.canOpenURL(url) {
-							UIApplication.shared.open(url, options: [:], completionHandler: nil)
-						}
+
+
+		switch (tableViewModel.authStatus, self.searchBarView.locationTextField.text?.isEmpty) {
+		case (.notDetermined, true),(.restricted, true),(.denied,true):
+			let alertController = UIAlertController(title: "Please provide a search location or allow this app access to your location to see the map.", message: nil, preferredStyle: .alert)
+			let okAction = UIAlertAction(title: "OK", style: .default, handler: nil)
+			let settingsAction = UIAlertAction(title: "Open Settings", style: .default, handler: { (action) -> Void in
+				if let url = URL(string:UIApplication.openSettingsURLString) {
+					if UIApplication.shared.canOpenURL(url) {
+						UIApplication.shared.open(url, options: [:], completionHandler: nil)
 					}
-				})
-				alertController.addAction(okAction)
-				alertController.addAction(settingsAction)
-				present(alertController, animated: true)
-			} else {
-				if navigationItem.rightBarButtonItem?.title == "List" {
-					navigationItem.rightBarButtonItem?.title = "Map"
-				} else {
-					navigationItem.rightBarButtonItem?.title = "List"
 				}
-				homeViewControllerSetup()
-			}
-		case .authorizedAlways, .authorizedWhenInUse:
-			if navigationItem.rightBarButtonItem?.title == "List" {
-				navigationItem.rightBarButtonItem?.title = "Map"
-			} else {
-				navigationItem.rightBarButtonItem?.title = "List"
-			}
-			homeViewControllerSetup()
+			})
+			alertController.addAction(okAction)
+			alertController.addAction(settingsAction)
+			present(alertController, animated: true)
 		default:
-			print("Unhandled case in locationManager for map/list toggle pressed")
+			switch self.homeViewModel.state.value {
+			case .mapView:
+				self.homeViewModel.state.value = .listView
+			case .listView:
+				self.homeViewModel.state.value = .mapView
+			}
+//			homeViewControllerSetup()
 		}
 	}
 	func homeViewControllerSetup() {
 		setupSearchBarView()
-		if navigationItem.rightBarButtonItem?.title == "Map" {//homevm should have a state on which to show: map or tableview
-			UIView.animate(withDuration: 0.5, delay: 0.0, options: [], animations: {
-				if self.mapKitView.isDescendant(of: self.view) {
-					self.mapKitView.removeFromSuperview()
+		self.tableView.reactive.reloadData <~ self.tableViewModel.venues.producer.map {_ in}
+		self.reactive.makeBindingTarget { (this, state) in
+				self.navigationItem.rightBarButtonItem?.title = state.toggleTitle
+				switch state {
+				case .mapView:
+					UIView.animate(withDuration: 0.5, delay: 0.0, options: [], animations: {
+						if self.tableView.isDescendant(of: self.view) {
+							self.tableView.removeFromSuperview()
+						}
+						self.setupMapView()
+					})
+				case .listView:
+					UIView.animate(withDuration: 0.5, delay: 0.0, options: [], animations: {
+						if self.mapKitView.isDescendant(of: self.view) {
+							self.mapKitView.removeFromSuperview()
+						}
+						self.setupTableView()
+					})
 				}
-				self.setupTableView()
-			})
-		} else {
-			UIView.animate(withDuration: 0.5, delay: 0.0, options: [], animations: {
-				if self.tableView.isDescendant(of: self.view) {
-					self.tableView.removeFromSuperview()
-				}
-				self.setupMapView()
-
-
-			})
-
-		}
+			} <~ self.homeViewModel.state.producer
 	}
 	func setupSearchBarView() {
 		self.searchBarView.delegate = self
@@ -230,7 +184,6 @@ class HomeViewController: UIViewController {
 		self.view.addSubview(mapKitView)
 		self.mapKitView.translatesAutoresizingMaskIntoConstraints = false
 		self.mapKitView.topAnchor.constraint(equalTo: self.searchBarView.bottomAnchor).isActive = true
-//		self.mapKitView.heightAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.heightAnchor, multiplier: 0.92).isActive = true
 		self.mapKitView.leadingAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.leadingAnchor).isActive = true
 		self.mapKitView.trailingAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.trailingAnchor).isActive = true
 		self.mapKitView.bottomAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.bottomAnchor).isActive = true
@@ -251,7 +204,7 @@ extension HomeViewController: UITableViewDataSource, UITableViewDelegate{
 		cell.locationDistance.text = venueVM.venueDistance
 		cell.locationDescription.numberOfLines = venueVM.venueDescriptionLineCount
 		cell.locationDescription.text = venueVM.venueDescription
-// images not returning***
+// images not returning ***
 		cell.cellImage.reactive.image <~ cell.model.venueImage
 		cell.model.getImage() //triggers func which will update a venueImage value
 		return cell
@@ -262,12 +215,9 @@ extension HomeViewController: UITableViewDataSource, UITableViewDelegate{
 		let detailVC = HomeDetailViewController()
 		detailVC.venue = venue
 		detailVC.homeDetailView.detailImageView.image = selectedCell.cellImage.image
-		//        detailVC
-	//        UIView.animate(withDuration: 5.5, delay: 0.0, options: [], animations: {
-	//        })
 		navigationController?.pushViewController(detailVC, animated: true)
 	}
-	}
+}
 extension HomeViewController: MKMapViewDelegate{
 	func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
 		guard annotation is MKPointAnnotation else { return nil }
@@ -312,14 +262,14 @@ extension HomeViewController: UITextFieldDelegate {
 		if textField == self.searchBarView.queryTextField {
             print("query: \(String(describing: textField.text))")
             //guard for textfield stuff
-            query = textField.text ?? ""
+//            query = textField.text ?? ""
         }
 		if textField == self.searchBarView.locationTextField {
             print("location: \(String(describing: textField.text))")
             locationString = textField.text ?? ""
         }
 		if let userLocation = userLocation {
-			self.tableViewModel.getVenues(near: locationString, query: query)
+//			self.tableViewModel.getVenues(near: locationString, query: query)
 //           getVenues(userLocation: userLocation, near: locationString, query: query)
 //            setupAnnotations()
         }

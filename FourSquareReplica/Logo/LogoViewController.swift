@@ -10,37 +10,33 @@ import UIKit
 import CoreLocation
 import MapKit
 
-
 class LogoViewController: UIViewController {
-    //need to get user location on this controller and segue its initial value to homeviewcontroller
+	private let logoView = LogoView()
+	var userLocation = CLLocationCoordinate2D()
 
-//    let locationManager = CLLocationManager()
-
-    private let logoView = LogoView()
-    var userLocation = CLLocationCoordinate2D()
-    
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        view.addSubview(logoView)
-        logoView.delegate = self
-//        locationManager.delegate = self
-//        if CLLocationManager.authorizationStatus() == .authorizedWhenInUse {
-//            //we need to say how accurate the data should be
-//            locationManager.desiredAccuracy = kCLLocationAccuracyBest
-//            locationManager.startUpdatingLocation()
-//        } else {
-//            locationManager.requestWhenInUseAuthorization()
-//        }
-    }
-
+	override func viewDidLoad() {
+		super.viewDidLoad()
+		view.addSubview(logoView)
+		logoView.delegate = self
+	}
 }
 extension LogoViewController: LogoViewDelegate {
 	func searchTerms(query: String, near: String) {
-        let detailVC = HomeViewController()
-        detailVC.query = query
-		detailVC.near = near
-        detailVC.userLocation = userLocation
-        self.navigationController?.pushViewController(detailVC, animated: true)
+        let homeViewController = HomeViewController()
+		let tableViewModel = TableViewModel()
+		var locationState: SearchBarViewModel.LocationState
+		switch tableViewModel.authStatus {
+		case .authorizedAlways, .authorizedWhenInUse:
+			locationState = .on
+		default:
+			locationState = .off
+		}
+		let searchBarViewModel = SearchBarViewModel(query: query, near: near, locationState: locationState)
+		let homeViewModel = HomeViewModel(searchBarViewModel: searchBarViewModel, tableViewModel: tableViewModel)
+
+		homeViewController.homeViewModel = homeViewModel
+        homeViewController.userLocation = userLocation // *** might not need
+        self.navigationController?.pushViewController(homeViewController, animated: true)
     }
 }
 

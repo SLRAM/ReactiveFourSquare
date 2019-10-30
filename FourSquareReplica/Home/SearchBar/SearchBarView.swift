@@ -7,6 +7,9 @@
 //
 
 import UIKit
+import ReactiveCocoa
+import ReactiveSwift
+
 protocol SearchBarViewDelegate: AnyObject {
     func userLocationButton()
 }
@@ -14,6 +17,7 @@ protocol SearchBarViewDelegate: AnyObject {
 class SearchBarView: UIView {
     
     weak var delegate: SearchBarViewDelegate?
+	var viewModel: SearchBarViewModel!
 
     lazy var queryTextField: UITextField = {
 			let textField = UITextField()
@@ -62,6 +66,9 @@ class SearchBarView: UIView {
 		commonInit()
 	}
 	private func commonInit() {
+		//these should be moved to a point in the code after the viewModel exists
+		self.viewModel.near <~ self.locationTextField.reactive.textValues //nil
+		self.viewModel.query <~ self.queryTextField.reactive.textValues //nil
 		setupView()
 		setupSubViews()
 	}

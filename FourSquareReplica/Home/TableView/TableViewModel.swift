@@ -22,15 +22,15 @@ class TableViewModel {
 		case off(String)
 	}
 
-	func getVenues(near: String, query: String) {
-		FourSquareAPI.searchFourSquare(userLocation: LocationApplicationService.currentLocation ?? CLLocationCoordinate2D(latitude: 40.781594, longitude: -73.965816), near: near, query: query) { [weak self] (appError, venues) in
-			if let appError = appError {
-			print("getVenue - \(appError)")
-		} else if let venues = venues {
-			self?.venues.value = venues
-			}
-		}
-	}
+//	func getVenues(near: String, query: String) {
+//		FourSquareAPI.searchFourSquare(userLocation: LocationApplicationService.currentLocation ?? CLLocationCoordinate2D(latitude: 40.781594, longitude: -73.965816), near: near, query: query) { [weak self] (appError, venues) in
+//			if let appError = appError {
+//			print("getVenue - \(appError)")
+//		} else if let venues = venues {
+//			self?.venues.value = venues
+//			}
+//		}
+//	}
 
 	func numberOfRowsInSection() -> Int {
 		return self.venues.value.count
