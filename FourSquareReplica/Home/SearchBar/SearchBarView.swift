@@ -11,33 +11,33 @@ import ReactiveCocoa
 import ReactiveSwift
 
 protocol SearchBarViewDelegate: AnyObject {
-    func userLocationButton()
+	func userLocationButton()
 }
 
 class SearchBarView: UIView {
-    
-    weak var delegate: SearchBarViewDelegate?
-	var viewModel: SearchBarViewModel!
 
-    lazy var queryTextField: UITextField = {
-			let textField = UITextField()
-			textField.placeholder = "Search FourSquares"
-			textField.textColor = .black
-			textField.layer.cornerRadius = 10
-			textField.layer.borderWidth = 2
-			textField.layer.borderColor = UIColor.gray.cgColor
-			textField.backgroundColor = #colorLiteral(red: 0.6924440265, green: 0.6956507564, blue: 0.7034814358, alpha: 1)
-			textField.textAlignment = .center
-			return textField
-		}()
-    
-    lazy var nearMeButton:UIButton = {
-			let button = UIButton()
-			button.setBackgroundImage(UIImage(named: "icons8-marker"), for: .normal)
-			button.addTarget(self, action: #selector(nearMeButtonPressed), for: .touchUpInside)
-			button.clipsToBounds = true
-			return button
-		}()
+	weak var delegate: SearchBarViewDelegate?
+	let viewModel = MutableProperty<SearchBarViewModel?>(nil)
+
+	lazy var queryTextField: UITextField = {
+		let textField = UITextField()
+		textField.placeholder = "Search FourSquares"
+		textField.textColor = .black
+		textField.layer.cornerRadius = 10
+		textField.layer.borderWidth = 2
+		textField.layer.borderColor = UIColor.gray.cgColor
+		textField.backgroundColor = #colorLiteral(red: 0.6924440265, green: 0.6956507564, blue: 0.7034814358, alpha: 1)
+		textField.textAlignment = .center
+		return textField
+	}()
+
+	lazy var nearMeButton:UIButton = {
+		let button = UIButton()
+		button.setBackgroundImage(UIImage(named: "icons8-marker"), for: .normal)
+		button.addTarget(self, action: #selector(nearMeButtonPressed), for: .touchUpInside)
+		button.clipsToBounds = true
+		return button
+	}()
 	@objc func nearMeButtonPressed() {
 		print("near me pressed")
 		delegate?.userLocationButton()
@@ -67,10 +67,20 @@ class SearchBarView: UIView {
 	}
 	private func commonInit() {
 		//these should be moved to a point in the code after the viewModel exists
-		self.viewModel.near <~ self.locationTextField.reactive.textValues //nil
-		self.viewModel.query <~ self.queryTextField.reactive.textValues //nil
 		setupView()
 		setupSubViews()
+
+		self.queryTextField.reactive.text <~ self.viewModel.signal.skipNil().map { $0.query.value }
+
+		self.locationTextField.reactive.text <~ self.viewModel.signal.skipNil().map { $0.near.value }
+
+		self.locationTextField.reactive.textValues.observeValues { near in
+			self.viewModel.value?.near.value = near
+		}
+		self.queryTextField.reactive.textValues.observeValues { query in
+			self.viewModel.value?.query.value = query
+		}
+
 	}
 
 }

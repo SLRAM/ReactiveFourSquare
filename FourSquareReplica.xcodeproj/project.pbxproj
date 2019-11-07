@@ -23,6 +23,7 @@
 		90908FA52368C80800FD9903 /* HomeViewForReference.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90908FA42368C80800FD9903 /* HomeViewForReference.swift */; };
 		90908FA92368E8DE00FD9903 /* HomeViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90908FA82368E8DD00FD9903 /* HomeViewModel.swift */; };
 		90908FAB2369DEBE00FD9903 /* SearchBarViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90908FAA2369DEBE00FD9903 /* SearchBarViewModel.swift */; };
+		90908FAF236B651F00FD9903 /* MapViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90908FAE236B651F00FD9903 /* MapViewModel.swift */; };
 		90E1B3E8235619FB00122D00 /* TableViewCellModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90E1B3E7235619FB00122D00 /* TableViewCellModel.swift */; };
 		9703D362220DECD300B7E11A /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9703D361220DECD300B7E11A /* AppDelegate.swift */; };
 		9703D369220DECD700B7E11A /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9703D368220DECD700B7E11A /* Assets.xcassets */; };
@@ -77,6 +78,7 @@
 		90908FA42368C80800FD9903 /* HomeViewForReference.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HomeViewForReference.swift; sourceTree = "<group>"; };
 		90908FA82368E8DD00FD9903 /* HomeViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeViewModel.swift; sourceTree = "<group>"; };
 		90908FAA2369DEBE00FD9903 /* SearchBarViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchBarViewModel.swift; sourceTree = "<group>"; };
+		90908FAE236B651F00FD9903 /* MapViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapViewModel.swift; sourceTree = "<group>"; };
 		90E1B3E7235619FB00122D00 /* TableViewCellModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TableViewCellModel.swift; sourceTree = "<group>"; };
 		9703D35E220DECD300B7E11A /* FourSquareReplica.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = FourSquareReplica.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		9703D361220DECD300B7E11A /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -191,6 +193,7 @@
 			isa = PBXGroup;
 			children = (
 				9750E26A221DB8FB0017C25C /* MapView.swift */,
+				90908FAE236B651F00FD9903 /* MapViewModel.swift */,
 			);
 			path = MapView;
 			sourceTree = "<group>";
@@ -458,6 +461,7 @@
 				9061982023678C500011C903 /* TableView.swift in Sources */,
 				974FA0AC221629EA006381DD /* ImageHelper.swift in Sources */,
 				48E9410B220E35CC00E92242 /* PrivateInfo.swift in Sources */,
+				90908FAF236B651F00FD9903 /* MapViewModel.swift in Sources */,
 				9703D38B220E1B2C00B7E11A /* ListsCollectionViewCell.swift in Sources */,
 				9703D37A220E16B600B7E11A /* ListsViewController.swift in Sources */,
 				C615960B221C978A00459917 /* favoritesModel.swift in Sources */,

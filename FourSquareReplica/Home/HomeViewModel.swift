@@ -14,13 +14,16 @@ import MapKit
 
 class HomeViewModel {
 	var state = MutableProperty(ViewState.listView)
+	var alert = MutableProperty(AlertState.locationAlert)
+
 	let searchBarViewModel: SearchBarViewModel
 	let tableViewModel: TableViewModel
-//	let mapViewModel: MapViewModel
+	let mapViewModel: MapViewModel
 
-	init(searchBarViewModel: SearchBarViewModel, tableViewModel: TableViewModel) {
+	init(searchBarViewModel: SearchBarViewModel, tableViewModel: TableViewModel, mapViewModel: MapViewModel) {
 		self.searchBarViewModel = searchBarViewModel
 		self.tableViewModel = tableViewModel
+		self.mapViewModel = mapViewModel
 		SignalProducer.combineLatest(
 			searchBarViewModel.query,
 			searchBarViewModel.near).startWithValues { [unowned self] query, near in //.throttle. adds a time interval
@@ -34,6 +37,7 @@ class HomeViewModel {
 			print("getVenue - \(appError)")
 		} else if let venues = venues {
 				self?.tableViewModel.venues.value = venues
+				self?.mapViewModel.venues.value = venues
 			}
 		}
 	}
@@ -48,6 +52,27 @@ class HomeViewModel {
 				return "Map"
 			case .mapView:
 				return "List"
+			}
+		}
+	}
+	enum AlertState {
+		case locationAlert
+		case optionsAlert
+
+		var title: String? {
+			switch self {
+			case .locationAlert:
+				return "Please provide a search location or allow this app access to your location to see the map."
+			case .optionsAlert:
+				return nil
+			}
+		}
+		var message: String? {
+			switch self {
+			case .locationAlert:
+				return nil
+			case .optionsAlert:
+				return "Options"
 			}
 		}
 	}

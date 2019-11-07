@@ -24,6 +24,7 @@ extension LogoViewController: LogoViewDelegate {
 	func searchTerms(query: String, near: String) {
         let homeViewController = HomeViewController()
 		let tableViewModel = TableViewModel()
+		let mapViewModel = MapViewModel()
 		var locationState: SearchBarViewModel.LocationState
 		switch tableViewModel.authStatus {
 		case .authorizedAlways, .authorizedWhenInUse:
@@ -32,10 +33,9 @@ extension LogoViewController: LogoViewDelegate {
 			locationState = .off
 		}
 		let searchBarViewModel = SearchBarViewModel(query: query, near: near, locationState: locationState)
-		let homeViewModel = HomeViewModel(searchBarViewModel: searchBarViewModel, tableViewModel: tableViewModel)
+		let homeViewModel = HomeViewModel(searchBarViewModel: searchBarViewModel, tableViewModel: tableViewModel, mapViewModel: mapViewModel)
 
 		homeViewController.homeViewModel = homeViewModel
-        homeViewController.userLocation = userLocation // *** might not need
         self.navigationController?.pushViewController(homeViewController, animated: true)
     }
 }

@@ -16,22 +16,13 @@ class HomeViewController: UIViewController {
 //	private var homeView = HomeView()
 	var homeViewModel: HomeViewModel!
 
-	private let mapKitView = MapView()
-//	let mapViewModel = ?
-
-	private let searchBarView = SearchBarView()
-//	let searchBarModel = ?
-
+	private let mapView = MapView()
 	private let tableView = TableView()
-	let tableViewModel = TableViewModel()
-
+	private let searchBarView = SearchBarView()
 
 	public let identifer = "marker"
 
-
-	var locationString = String()
-	var statusRawValue = Int32()
-	var userLocation : CLLocationCoordinate2D?
+//	var locationString = String()
 	var updatedUserLocation = CLLocationCoordinate2D()
 	class MyAnnotation: MKPointAnnotation {
 		var tag: Int!
@@ -39,43 +30,17 @@ class HomeViewController: UIViewController {
 
 	override func viewDidLoad() {
 		super.viewDidLoad()
+		self.searchBarView.viewModel.value = homeViewModel.searchBarViewModel //displays inputs from logo
 		self.mapListButton()
 //		setupLocation()
 	//        centerOnMap(location: initialLocation)
 		self.homeViewControllerSetup()
 
-	   // setupAnnotations()
 	}
-//	func setupLocation() {
-//
-//		guard let userLocation = userLocation,
-//			let query = query else {return}
-//		switch userLocation.latitude {
-//		case 0.0:
-//			near = "NYC"
-//			homeView.locationTextField.text = near
-//			locationString = near
-//			if !query.isEmpty {
-//				//if user deny and no query = use near only
-//				homeView.queryTextField.text = query
-//			}
-//			self.homeViewModel.getVenues(near: near, query: query)
-//
-//		default:
-//			homeView.locationTextField.text = "near me"
-//			homeView.locationTextField.isEnabled = false
-//			homeView.nearMeButton.setImage(UIImage(named: "icons8-location_filled"), for: .normal)
-//			let myCurrentRegion = MKCoordinateRegion(center: userLocation, latitudinalMeters: 9000, longitudinalMeters: 9000)
-//			homeView.mapView.setRegion(myCurrentRegion, animated: true)
-//
-//	//            homeView.nearMeButton.backgroundColor = #colorLiteral(red: 0.4481958747, green: 0.5343003273, blue: 0.7696674466, alpha: 1)
-//			if !query.isEmpty {
-//				//if user accept and no query = use user location only
-//				homeView.queryTextField.text = query
-//			}
-//			self.homeViewModel.getVenues(near: "", query: query)
-//		}
-//	}
+	func mapListButton() {
+		navigationItem.rightBarButtonItem = UIBarButtonItem.init(title: "Map", style: .plain, target: self, action: #selector(toggleLocation))
+	}
+
 //	func setupAnnotations(){
 //		var count = 0
 //
@@ -95,6 +60,7 @@ class HomeViewController: UIViewController {
 //
 //			homeView.mapView.setRegion(coordinateRegion, animated: true)
 //			homeView.mapView.addAnnotation(annotation)
+//			mapKitView.mapView.
 //			count += 1
 //
 //		}
@@ -103,17 +69,23 @@ class HomeViewController: UIViewController {
 //
 //	}
 
-	func mapListButton() {
-		navigationItem.rightBarButtonItem = UIBarButtonItem.init(title: "Map", style: .plain, target: self, action: #selector(toggle))
-	}
-
-	@objc func toggle() {
-		print("pressed toggle")//edit toggle to account or adjust state
-
-
-		switch (tableViewModel.authStatus, self.searchBarView.locationTextField.text?.isEmpty) {
+	@objc func toggleLocation() {
+		switch (homeViewModel.tableViewModel.authStatus, self.searchBarView.locationTextField.text?.isEmpty) {
 		case (.notDetermined, true),(.restricted, true),(.denied,true):
-			let alertController = UIAlertController(title: "Please provide a search location or allow this app access to your location to see the map.", message: nil, preferredStyle: .alert)
+			alertMessage(alertState: .locationAlert)
+		default:
+			switch self.homeViewModel.state.value {
+			case .mapView:
+				self.homeViewModel.state.value = .listView
+			case .listView:
+				self.homeViewModel.state.value = .mapView
+			}
+		}
+	}
+	func alertMessage(alertState: HomeViewModel.AlertState){ //warning enum with a computed var for title and message. create switch case for the alert actions and addactions
+		switch alertState {
+		case .locationAlert:
+			let alertController = UIAlertController(title: alertState.title, message: alertState.message, preferredStyle: .alert)
 			let okAction = UIAlertAction(title: "OK", style: .default, handler: nil)
 			let settingsAction = UIAlertAction(title: "Open Settings", style: .default, handler: { (action) -> Void in
 				if let url = URL(string:UIApplication.openSettingsURLString) {
@@ -125,38 +97,16 @@ class HomeViewController: UIViewController {
 			alertController.addAction(okAction)
 			alertController.addAction(settingsAction)
 			present(alertController, animated: true)
-		default:
-			switch self.homeViewModel.state.value {
-			case .mapView:
-				self.homeViewModel.state.value = .listView
-			case .listView:
-				self.homeViewModel.state.value = .mapView
-			}
-//			homeViewControllerSetup()
+		case .optionsAlert:
+			let alertController = UIAlertController(title: alertState.title, message: alertState.message, preferredStyle: .actionSheet)
+			let cancelAction = UIAlertAction(title: "Cancel", style: .cancel)
+			alertController.addAction(cancelAction)
+			self.present(alertController, animated: true, completion: nil)
 		}
 	}
 	func homeViewControllerSetup() {
 		setupSearchBarView()
-		self.tableView.reactive.reloadData <~ self.tableViewModel.venues.producer.map {_ in}
-		self.reactive.makeBindingTarget { (this, state) in
-				self.navigationItem.rightBarButtonItem?.title = state.toggleTitle
-				switch state {
-				case .mapView:
-					UIView.animate(withDuration: 0.5, delay: 0.0, options: [], animations: {
-						if self.tableView.isDescendant(of: self.view) {
-							self.tableView.removeFromSuperview()
-						}
-						self.setupMapView()
-					})
-				case .listView:
-					UIView.animate(withDuration: 0.5, delay: 0.0, options: [], animations: {
-						if self.mapKitView.isDescendant(of: self.view) {
-							self.mapKitView.removeFromSuperview()
-						}
-						self.setupTableView()
-					})
-				}
-			} <~ self.homeViewModel.state.producer
+		displayTableViewOrMapView()
 	}
 	func setupSearchBarView() {
 		self.searchBarView.delegate = self
@@ -180,25 +130,45 @@ class HomeViewController: UIViewController {
 		self.tableView.bottomAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.bottomAnchor).isActive = true
 	}
 	func setupMapView() {
-		mapKitView.mapView.delegate = self
-		self.view.addSubview(mapKitView)
-		self.mapKitView.translatesAutoresizingMaskIntoConstraints = false
-		self.mapKitView.topAnchor.constraint(equalTo: self.searchBarView.bottomAnchor).isActive = true
-		self.mapKitView.leadingAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.leadingAnchor).isActive = true
-		self.mapKitView.trailingAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.trailingAnchor).isActive = true
-		self.mapKitView.bottomAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.bottomAnchor).isActive = true
+		mapView.mapView.delegate = self
+		self.view.addSubview(mapView)
+		self.mapView.translatesAutoresizingMaskIntoConstraints = false
+		self.mapView.topAnchor.constraint(equalTo: self.searchBarView.bottomAnchor).isActive = true
+		self.mapView.leadingAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.leadingAnchor).isActive = true
+		self.mapView.trailingAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.trailingAnchor).isActive = true
+		self.mapView.bottomAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.bottomAnchor).isActive = true
 	}
-
+	func displayTableViewOrMapView() {
+		//add a reload data for mapview. map is obtaining venues from this model too
+//		self.tableView.reactive.reloadData <~ self.homeViewModel.mapViewModel.venues.producer.map {_ in}
+		self.tableView.reactive.reloadData <~ self.homeViewModel.tableViewModel.venues.producer.map {_ in}
+		self.reactive.makeBindingTarget { (this, state) in
+				self.navigationItem.rightBarButtonItem?.title = state.toggleTitle
+				switch state {
+				case .mapView:
+					if self.tableView.isDescendant(of: self.view) {
+						self.tableView.removeFromSuperview()
+					}
+					self.setupMapView()
+					self.mapView.mapView.addAnnotations(self.homeViewModel.mapViewModel.annotations.value)
+				case .listView:
+					if self.mapView.isDescendant(of: self.view) {
+						self.mapView.removeFromSuperview()
+					}
+					self.setupTableView()
+				}
+			} <~ self.homeViewModel.state.producer
+	}
 }
 extension HomeViewController: UITableViewDataSource, UITableViewDelegate{
 	func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-		return self.tableViewModel.numberOfRowsInSection()
+		return self.homeViewModel.tableViewModel.numberOfRowsInSection()
 	}
 
 	func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
 		guard let cell = self.tableView.dequeueReusableCell(withIdentifier: "TableViewCell", for: indexPath) as? TableViewCell else {return UITableViewCell()}
 		
-		let venueVM = self.tableViewModel.venuesAtIndex(indexPath.row)
+		let venueVM = self.homeViewModel.tableViewModel.venuesAtIndex(indexPath.row)
 		cell.model = venueVM
 		cell.locationName.text = "\(indexPath.row + 1). \(venueVM.venueName)"
 		cell.locationDistance.text = venueVM.venueDistance
@@ -211,7 +181,7 @@ extension HomeViewController: UITableViewDataSource, UITableViewDelegate{
 	}
 	func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
 		guard let selectedCell = self.tableView.cellForRow(at: indexPath) as? TableViewCell else {return}
-		let venue = self.tableViewModel.venues.value[indexPath.row]
+		let venue = self.homeViewModel.tableViewModel.venues.value[indexPath.row]
 		let detailVC = HomeDetailViewController()
 		detailVC.venue = venue
 		detailVC.homeDetailView.detailImageView.image = selectedCell.cellImage.image
@@ -241,7 +211,7 @@ extension HomeViewController: MKMapViewDelegate{
 
 		let destinationVC = HomeDetailViewController()
 
-		let venue = self.tableViewModel.venues.value[myViewAnnotation.tag]
+		let venue = self.homeViewModel.tableViewModel.venues.value[myViewAnnotation.tag]
 		destinationVC.venue = venue
 	//        destinationVC.homeDetailView.detailImageView.image = selectedCell.cellImage.image
 
@@ -252,51 +222,36 @@ extension HomeViewController: MKMapViewDelegate{
 }
 
 extension HomeViewController: UITextFieldDelegate {
-    func textFieldDidBeginEditing(_ textField: UITextField) {
-        
-    }
-    func textFieldShouldBeginEditing(_ textField: UITextField) -> Bool {
-        return true
-    }
-    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
-		if textField == self.searchBarView.queryTextField {
-            print("query: \(String(describing: textField.text))")
-            //guard for textfield stuff
-//            query = textField.text ?? ""
-        }
-		if textField == self.searchBarView.locationTextField {
-            print("location: \(String(describing: textField.text))")
-            locationString = textField.text ?? ""
-        }
-		if let userLocation = userLocation {
-//			self.tableViewModel.getVenues(near: locationString, query: query)
-//           getVenues(userLocation: userLocation, near: locationString, query: query)
-//            setupAnnotations()
-        }
-        
-        textField.resignFirstResponder()
-		mapKitView.mapView.reloadInputViews()
-        return true
-    }
+	func textFieldDidBeginEditing(_ textField: UITextField) {
+
+	}
+	func textFieldShouldBeginEditing(_ textField: UITextField) -> Bool {
+		return true
+	}
+	func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+		textField.resignFirstResponder()
+		mapView.mapView.reloadInputViews()
+		return true
+	}
 }
 
 extension HomeViewController: SearchBarViewDelegate {
 	//this logic can go in vm
-    func userLocationButton() {
-		switch tableViewModel.authStatus {
+	func userLocationButton() {
+		switch homeViewModel.tableViewModel.authStatus {
 		case .notDetermined, .restricted, .denied:
-            let alertController = UIAlertController(title: "Please allow this app to access your user location in settings to enable this feature.", message: nil, preferredStyle: .alert)
-            let okAction = UIAlertAction(title: "OK", style: .default, handler: nil)
-            let settingsAction = UIAlertAction(title: "Open Settings", style: .default, handler: { (action) -> Void in
-                if let url = URL(string:UIApplication.openSettingsURLString) {
-                    if UIApplication.shared.canOpenURL(url) {
-                        UIApplication.shared.open(url, options: [:], completionHandler: nil)
-                    }
-                }
-            })
-            alertController.addAction(okAction)
-            alertController.addAction(settingsAction)
-            present(alertController, animated: true)
+			let alertController = UIAlertController(title: "Please allow this app to access your user location in settings to enable this feature.", message: nil, preferredStyle: .alert)
+			let okAction = UIAlertAction(title: "OK", style: .default, handler: nil)
+			let settingsAction = UIAlertAction(title: "Open Settings", style: .default, handler: { (action) -> Void in
+				if let url = URL(string:UIApplication.openSettingsURLString) {
+					if UIApplication.shared.canOpenURL(url) {
+						UIApplication.shared.open(url, options: [:], completionHandler: nil)
+					}
+				}
+			})
+			alertController.addAction(okAction)
+			alertController.addAction(settingsAction)
+			present(alertController, animated: true)
 		case .authorizedAlways, .authorizedWhenInUse:
 			if searchBarView.nearMeButton.currentImage == UIImage(named: "icons8-marker") {
 //            if homeView.nearMeButton.backgroundColor == #colorLiteral(red: 0.6193930507, green: 0.7189580798, blue: 0.9812330604, alpha: 1)  {

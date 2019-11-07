@@ -11,7 +11,6 @@ import ReactiveSwift
 import UIKit
 
 struct SearchBarViewModel {
-//	locationMarkerImageState
 	let placeholder = "ex. Miami"
 	let query: MutableProperty<String>
 	var near: MutableProperty<String>
