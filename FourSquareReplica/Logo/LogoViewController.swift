@@ -26,7 +26,7 @@ extension LogoViewController: LogoViewDelegate {
 		let tableViewModel = TableViewModel()
 		let mapViewModel = MapViewModel()
 		var locationState: SearchBarViewModel.LocationState
-		switch tableViewModel.authStatus {
+		switch LocationApplicationService.shared.status {
 		case .authorizedAlways, .authorizedWhenInUse:
 			locationState = .on
 		default:

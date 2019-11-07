@@ -15,6 +15,7 @@ struct SearchBarViewModel {
 	let query: MutableProperty<String>
 	var near: MutableProperty<String>
 	var locationState: MutableProperty<LocationState>
+	
 
 	init(query: String, near: String, locationState: LocationState) {
 		self.query = MutableProperty(query)
@@ -30,9 +31,16 @@ struct SearchBarViewModel {
 			switch self {
 			case .on:
 				return UIImage(named: "icons8-location_filled")!
-			case .off://(let locationString):
-//				nearString = locationString
+			case .off:
 				return UIImage(named: "icons8-marker")!
+			}
+		}
+		var toggleNear: (String, String?, Bool) {
+			switch self {
+			case .on:
+				return ("near me", nil, false)
+			case .off:
+				return ("", "ex. Miami", true)
 			}
 		}
 	}

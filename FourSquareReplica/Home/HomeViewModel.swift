@@ -29,6 +29,9 @@ class HomeViewModel {
 			searchBarViewModel.near).startWithValues { [unowned self] query, near in //.throttle. adds a time interval
 				self.getVenues(near: near, query: query)
 		}
+		self.searchBarViewModel.locationState.producer.filter { $0.self == .on}.startWithValues { state in
+			self.searchBarViewModel.near.value = state.toggleNear.0
+		}
 	}
 
 	func getVenues(near: String, query: String) {
@@ -57,11 +60,14 @@ class HomeViewModel {
 	}
 	enum AlertState {
 		case locationAlert
+		case mapAlert
 		case optionsAlert
 
 		var title: String? {
 			switch self {
 			case .locationAlert:
+				return "Please allow this app access to your user location in settings to enable this feature."
+			case .mapAlert:
 				return "Please provide a search location or allow this app access to your location to see the map."
 			case .optionsAlert:
 				return nil
@@ -70,6 +76,8 @@ class HomeViewModel {
 		var message: String? {
 			switch self {
 			case .locationAlert:
+				return nil
+			case .mapAlert:
 				return nil
 			case .optionsAlert:
 				return "Options"

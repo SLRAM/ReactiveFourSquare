@@ -15,8 +15,6 @@ class TableViewModel {
 //	var homeView = HomeView() DO NOT REFER TO IN VIEW MODEL
 	var venues = MutableProperty<[Venue]>([])
 	
-	var authStatus = LocationApplicationService.shared.status
-
 	enum LocationState {
 		case on
 		case off(String)
