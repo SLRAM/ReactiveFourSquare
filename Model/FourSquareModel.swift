@@ -14,9 +14,9 @@ struct FourSquareModel: Codable {
 }
 
 struct ResponseCollection: Codable {
-    let venues: [Venues]
+    let venues: [Venue]
 }
-struct Venues: Codable {
+struct Venue: Codable {
     let id: String
     let name: String // name of the venue
     let location: LocationContainer

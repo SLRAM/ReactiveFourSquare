@@ -180,7 +180,7 @@ class LogoView: UIView {
         commonInit()
     }
     private func commonInit() {
-                backgroundColor = .white
+//                backgroundColor = .white
         setupLogoView()
     }
 }

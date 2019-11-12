@@ -12,7 +12,7 @@ class FavoritesSearchVC: UIViewController {
 
     var favoritesSearch = FavoritesSearchView()
     var listViewController = ListsViewController()
-    var saveInfoToPlist: Venues!
+    var saveInfoToPlist: Venue!
     var folderInfo = [folderSetUp]()
     var venueInfo: FavoritesSetUp!
     

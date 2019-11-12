@@ -27,6 +27,7 @@ final class ImageAPIClient {
 								let imageLink = safeImage.prefix + "300x500" + safeImage.suffix
 //								completionHandler(nil, imageLink)
 								observer.send(value: imageLink)
+								print("This is the imageLink: \(imageLink)")
 								observer.sendCompleted()
 							}
 						} catch {

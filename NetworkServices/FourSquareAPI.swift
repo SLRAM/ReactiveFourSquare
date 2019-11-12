@@ -12,16 +12,24 @@ import MapKit
 final class FourSquareAPI {
     
     private init() {}
-    static func searchFourSquare(userLocation: CLLocationCoordinate2D, near: String, query: String, completionHandler: @escaping (AppError?, [Venues]?) -> Void) {
+    static func searchFourSquare(userLocation: CLLocationCoordinate2D, near: String, query: String, completionHandler: @escaping (AppError?, [Venue]?) -> Void) {
         //ll= if user allows us to use thier location info or near= if they deny/search by place
+		var nearString = near
+		switch nearString.lowercased() {
+		case "near me":
+			nearString = ""
+		default:
+			print("not near me")
+		}
         let searchQuery = query.replacingOccurrences(of: " ", with: "-")
-        let searchNear = near.replacingOccurrences(of: " ", with: "-")
+        let searchNear = nearString.replacingOccurrences(of: " ", with: "-")
         var userLocationAdded = ""
         if userLocation.latitude != 0.0 || userLocation.longitude != 0.0 {
             userLocationAdded = "ll=\(userLocation.latitude),\(userLocation.longitude)"
         }
+
         let endpointURLString = "https://api.foursquare.com/v2/venues/search?client_id=\(SecretKeys.clientID)&client_secret=\(SecretKeys.clientSecret)&v=20180323&limit=10&\(userLocationAdded)&near=\(searchNear)&query=\(searchQuery)"
-//        print(endpointURLString)
+		print(endpointURLString)
         NetworkHelper.shared.performDataTask(endpointURLString: endpointURLString) { (appError, data) in
             if let appError = appError {
                 completionHandler(appError, nil)
