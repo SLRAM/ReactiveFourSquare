@@ -36,14 +36,14 @@ final class LocationApplicationService: NSObject, ApplicationService {
 extension LocationApplicationService: CLLocationManagerDelegate {
 
 	func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-		print("user has changed locations")
+//		print("user has changed locations")
 		guard let currentLocation = locations.last else {return}
 		LocationApplicationService.self.currentLocation = currentLocation.coordinate
-		print("The user is in lat: \(currentLocation.coordinate.latitude) and long:\(currentLocation.coordinate.longitude)")
+//		print("The user is in lat: \(currentLocation.coordinate.latitude) and long:\(currentLocation.coordinate.longitude)")
 	}
 
 	func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
-		print("user changed the authorization")
+//		print("user changed the authorization")
 		self.status = status
 		switch status {
 		case .notDetermined, .restricted, .denied:

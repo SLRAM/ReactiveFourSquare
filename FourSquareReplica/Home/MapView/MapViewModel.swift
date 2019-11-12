@@ -21,31 +21,33 @@ class MapViewModel {
 	var region = MutableProperty<MKCoordinateRegion>(MKCoordinateRegion())
 //when venues is set I want annotations to get set through the get annotations func
 	init() {
-//		self.reactive.makeBindingTarget { (this, state) in
-//
-//			} <~ self.venues.producer.map {_ in}
 	}
 	func getAnnotations() {
 		var count = 0
-		var annotations = [MyAnnotation]()
+		for venue in venues.value {
 
-		for venue in self.venues.value {
-//			let regionRadius: CLLocationDistance = 9000
-			let coordinate = CLLocationCoordinate2D(latitude: venue.location.lat!, longitude: venue.location.lng!)
-//			let coordinateRegion = MKCoordinateRegion(center: coordinate, latitudinalMeters: regionRadius, longitudinalMeters: regionRadius)
+			print("venue number: \(count)")
+			let coordinate = CLLocationCoordinate2D.init(latitude: venue.location.lat!, longitude: venue.location.lng!)
+
 			let annotation = MyAnnotation()
 			annotation.coordinate = coordinate
 			annotation.title = venue.name
 			annotation.subtitle = venue.location.address
 			annotation.tag = count
+			annotations.value.append(annotation)
+//			mapView.addAnnotation(annotation)
 			count += 1
-			annotations.append(annotation)
-
 		}
-		self.annotations.value = annotations
 	}
-	func setRegion() {
-		let currentRegion = MKCoordinateRegion(center: self.venues.value[0].location.coordinate, latitudinalMeters: 9000, longitudinalMeters: 9000)
-		self.region.value = currentRegion
+	func removeAnnotations(mapView: MKMapView) {
+		mapView.removeAnnotations(self.annotations.value)
+		self.annotations = MutableProperty<[MyAnnotation]>([])
+	}
+	func setRegion(mapView: MKMapView) {
+		if !venues.value.isEmpty {
+			let currentRegion = MKCoordinateRegion(center: self.venues.value[0].location.coordinate, latitudinalMeters: 9000, longitudinalMeters: 9000)
+			self.region.value = currentRegion
+			mapView.setRegion(currentRegion, animated: true)
+		}
 	}
 }
