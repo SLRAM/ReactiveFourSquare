@@ -20,20 +20,18 @@ class HomeViewController: UIViewController {
 	private let tableView = TableView()
 	private let searchBarView = SearchBarView()
 
-	public let identifer = "marker"
-
 	class MyAnnotation: MKPointAnnotation {
 		var tag: Int!
 	}
 
 	override func viewDidLoad() {
 		super.viewDidLoad()
-		self.searchBarView.viewModel.value = homeViewModel.searchBarViewModel //displays inputs from logo
+		self.searchBarView.viewModel.value = homeViewModel.searchBarViewModel //displays inputs from logo add to homeviewmodel
 		self.mapListButton()
-		self.homeViewModel.searchBarViewModel.locationState.producer.startWithValues { state in
-			self.searchBarView.nearMeButton.setImage(state.toggleImage, for: .normal)
-		}
 		self.homeViewControllerSetup()
+		self.homeViewModel.alertSignal.output.observeValues { [weak self] alert in
+			self?.present(alert, animated: true)
+		}
 	}
 	func mapListButton() {
 		navigationItem.rightBarButtonItem = UIBarButtonItem.init(title: "Map", style: .plain, target: self, action: #selector(toggleLocation))
@@ -49,39 +47,7 @@ class HomeViewController: UIViewController {
 	}
 
 	@objc func toggleLocation() {
-		switch (LocationApplicationService.shared.status, self.searchBarView.locationTextField.text?.isEmpty) {
-		case (.notDetermined, true),(.restricted, true),(.denied,true):
-			alertMessage(alertState: .mapAlert, style: .alert)
-		default:
-			switch self.homeViewModel.state.value {
-			case .mapView:
-				self.homeViewModel.state.value = .listView
-			case .listView:
-				self.homeViewModel.state.value = .mapView
-			}
-		}
-	}
-	func alertMessage(alertState: HomeViewModel.AlertState, style: UIAlertController.Style){ //move function out of home. This will be used across the app***
-		let alertController = UIAlertController(title: alertState.title, message: alertState.message, preferredStyle: style)
-		switch alertState {
-		case .locationAlert, .mapAlert:
-			let okAction = UIAlertAction(title: "OK", style: .default, handler: nil)
-			let settingsAction = UIAlertAction(title: "Open Settings", style: .default, handler: { (action) -> Void in
-				if let url = URL(string:UIApplication.openSettingsURLString) {
-					if UIApplication.shared.canOpenURL(url) {
-						UIApplication.shared.open(url, options: [:], completionHandler: nil)
-					}
-				}
-			})
-			alertController.addAction(okAction)
-			alertController.addAction(settingsAction)
-			self.present(alertController, animated: true)
-		case .optionsAlert:
-			//style is actionsheet
-			let cancelAction = UIAlertAction(title: "Cancel", style: .cancel)
-			alertController.addAction(cancelAction)
-			self.present(alertController, animated: true)
-		}
+		self.homeViewModel.toggleLocation()
 	}
 	func homeViewControllerSetup() {
 		setupSearchBarView()
@@ -145,7 +111,7 @@ class HomeViewController: UIViewController {
 			this.text = state.toggleNear.0
 			this.placeholder = state.toggleNear.1
 			this.isEnabled = state.toggleNear.2
-		} <~ self.homeViewModel.searchBarViewModel.locationState
+		} <~ self.homeViewModel.searchBarViewModel.locationState// move to search bar view
 	}
 }
 extension HomeViewController: UITableViewDataSource, UITableViewDelegate{

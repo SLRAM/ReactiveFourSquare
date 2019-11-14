@@ -9,8 +9,8 @@
 import Foundation
 import UIKit
 
-class AlertMessage {
-	func alertMessage(alertState: HomeViewModel.AlertState, style: UIAlertController.Style) -> UIAlertController { //move function out of home. This will be used across the app
+struct AlertMessage {
+	static func alertMessage(alertState: HomeViewModel.AlertState, style: UIAlertController.Style) -> UIAlertController { //move function out of home. This will be used across the app
 		let alertController = UIAlertController(title: alertState.title, message: alertState.message, preferredStyle: style)
 		switch alertState {
 		case .locationAlert, .mapAlert:

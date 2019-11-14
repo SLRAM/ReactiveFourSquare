@@ -19,6 +19,7 @@ class HomeViewModel {
 	let searchBarViewModel: SearchBarViewModel
 	let tableViewModel: TableViewModel
 	let mapViewModel: MapViewModel
+	let alertSignal = Signal<UIAlertController, Never>.pipe()
 
 	init(searchBarViewModel: SearchBarViewModel, tableViewModel: TableViewModel, mapViewModel: MapViewModel) {
 		self.searchBarViewModel = searchBarViewModel
@@ -34,6 +35,20 @@ class HomeViewModel {
 		}
 	}
 
+	func toggleLocation() {
+		switch (LocationApplicationService.shared.status) {
+		case .notDetermined,.restricted,.denied:
+			alertSignal.input.send(value: AlertMessage.alertMessage(alertState: .mapAlert, style: .alert))
+		case .authorizedAlways, .authorizedWhenInUse:
+			switch self.state.value {
+			case .mapView:
+				self.state.value = .listView
+			case .listView:
+				self.state.value = .mapView
+			}
+		}
+
+	}
 	func getVenues(near: String, query: String) {
 		FourSquareAPI.searchFourSquare(userLocation: LocationApplicationService.currentLocation ?? CLLocationCoordinate2D(latitude: 40.781594, longitude: -73.965816), near: near, query: query) { [weak self] (appError, venues) in
 			if let appError = appError {

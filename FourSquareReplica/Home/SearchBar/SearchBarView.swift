@@ -64,6 +64,7 @@ class SearchBarView: UIView {
 	required init?(coder aDecoder: NSCoder) {
 		super.init(coder: aDecoder)
 		commonInit()
+
 	}
 	private func commonInit() {
 		//these should be moved to a point in the code after the viewModel exists
@@ -80,7 +81,18 @@ class SearchBarView: UIView {
 		self.queryTextField.reactive.textValues.observeValues { query in
 			self.viewModel.value?.query.value = query
 		}
+//if using a producer inside another producer you need to flatmap. if dealing with optional, add SkipNil
+		self.nearMeButton.reactive.image <~ self.viewModel.producer.skipNil().flatMap(.latest) { $0.locationState.producer }.map { $0.toggleImage}
 
+
+//		self.searchBarView.locationTextField.reactive.makeBindingTarget { (this, state) in
+//			this.text = state.toggleNear.0
+//			this.placeholder = state.toggleNear.1
+//			this.isEnabled = state.toggleNear.2
+//		} <~ self.homeViewModel.searchBarViewModel.locationState
+
+
+		
 	}
 
 }
