@@ -27,6 +27,7 @@ class HomeViewController: UIViewController {
 	override func viewDidLoad() {
 		super.viewDidLoad()
 		self.searchBarView.viewModel.value = homeViewModel.searchBarViewModel //displays inputs from logo add to homeviewmodel
+		self.mapView.viewModel.value = homeViewModel.mapViewModel
 		self.mapListButton()
 		self.homeViewControllerSetup()
 		self.homeViewModel.alertSignal.output.observeValues { [weak self] alert in
@@ -35,15 +36,6 @@ class HomeViewController: UIViewController {
 	}
 	func mapListButton() {
 		navigationItem.rightBarButtonItem = UIBarButtonItem.init(title: "Map", style: .plain, target: self, action: #selector(toggleLocation))
-	}
-
-	func setupAnnotations() {
-		self.reactive.makeBindingTarget { (this, _) in
-			self.homeViewModel.mapViewModel.removeAnnotations(mapView: self.mapView.mapView)
-			self.homeViewModel.mapViewModel.getAnnotations()
-			self.mapView.mapView.addAnnotations(self.homeViewModel.mapViewModel.annotations.value)
-			self.homeViewModel.mapViewModel.setRegion(mapView: self.mapView.mapView)
-			} <~ self.homeViewModel.mapViewModel.venues.producer.map {_ in}
 	}
 
 	@objc func toggleLocation() {
@@ -85,10 +77,7 @@ class HomeViewController: UIViewController {
 		self.mapView.bottomAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.bottomAnchor).isActive = true
 	}
 	func displayTableViewOrMapView() {
-		self.reactive.makeBindingTarget { (this, _) in
-			self.setupAnnotations()
-		} <~ self.homeViewModel.mapViewModel.venues.producer.map {_ in}
-		self.tableView.reactive.reloadData <~ self.homeViewModel.tableViewModel.venues.producer.map {_ in}
+		self.tableView.reactive.reloadData <~ self.homeViewModel.tableViewModel.venues.producer.map {_ in} //move to table view
 		self.reactive.makeBindingTarget { (this, state) in
 				self.navigationItem.rightBarButtonItem?.title = state.toggleTitle
 				switch state {
@@ -97,7 +86,6 @@ class HomeViewController: UIViewController {
 						self.tableView.removeFromSuperview()
 					}
 					self.setupMapView()
-					self.setupAnnotations()
 				case .listView:
 					if self.mapView.isDescendant(of: self.view) {
 						self.mapView.removeFromSuperview()
