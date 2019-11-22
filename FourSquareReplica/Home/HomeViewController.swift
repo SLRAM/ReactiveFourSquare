@@ -133,6 +133,7 @@ extension HomeViewController: UITableViewDataSource, UITableViewDelegate{
 }
 extension HomeViewController: MKMapViewDelegate{
 	func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
+
 		guard annotation is MKPointAnnotation else { return nil }
 
 		let identifier = "Annotation"
@@ -147,16 +148,20 @@ extension HomeViewController: MKMapViewDelegate{
 		}
 		return annotationView
 	}
+	
 	func mapView(_ mapView: MKMapView, annotationView view: MKAnnotationView, calloutAccessoryControlTapped control: UIControl) {
-		guard let myViewAnnotation = view.annotation as? MyAnnotation else {
+		guard let myViewAnnotation = view.annotation else {
 			return
 		}
 
-		let destinationVC = HomeDetailViewController()
-		let venue = self.homeViewModel.tableViewModel.venues.value[myViewAnnotation.tag]
-		destinationVC.venue = venue
-	//        destinationVC.homeDetailView.detailImageView.image = selectedCell.cellImage.image
-		navigationController?.pushViewController(destinationVC, animated: true)
+		for venue in self.homeViewModel.mapViewModel.venues.value {
+			guard let unwrappedAnnotationTitle = myViewAnnotation.title else {return}
+			if unwrappedAnnotationTitle == venue.name {
+				let destinationVC = HomeDetailViewController()
+				destinationVC.venue = venue
+				navigationController?.pushViewController(destinationVC, animated: true)
+			}
+		}
 	}
 }
 
