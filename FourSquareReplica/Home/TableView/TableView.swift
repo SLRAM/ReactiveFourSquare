@@ -9,6 +9,7 @@
 import UIKit
 
 class TableView: UITableView {
+	var model: TableViewModel!
 
 	override init(frame: CGRect, style: UITableView.Style) {
 		super.init(frame: UIScreen.main.bounds, style: style)

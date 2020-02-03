@@ -8,39 +8,38 @@
 
 import Foundation
 import MapKit
-//When you guys get the chance check you indiviual postman to see if you think things should be added to the model or renamed etc.
+
 struct FourSquareModel: Codable {
-    let response: ResponseCollection?
+	let response: ResponseCollection?
 }
 
 struct ResponseCollection: Codable {
-    let venues: [Venue]
+	let venues: [Venue]
 }
 struct Venue: Codable {
-    let id: String
-    let name: String // name of the venue
-    let location: LocationContainer
-    let categories: [Categories]
-    let hereNow: HereNow
+	let id: String
+	let name: String // name of the venue
+	let location: LocationContainer
+	let categories: [Categories]
+	let hereNow: HereNow
 }
 struct LocationContainer: Codable {
-    let address: String?
-    let lat: Double?
-    let lng: Double?
-    let distance: Int?
-//    let postalCode: String?
-    let city: String?
-    let state: String
-    let country: String
-    let formattedAddress: [String]
-    public var coordinate: CLLocationCoordinate2D {
-        guard let lat = lat, let lng = lng else {
-            fatalError("lat and long are nil")
-        }
-        return CLLocationCoordinate2DMake(lat, lng)
-    }
-    
-    
+	let address: String?
+	let lat: Double?
+	let lng: Double?
+	let distance: Int?
+	let city: String?
+	let state: String
+	let country: String
+	let formattedAddress: [String]
+	public var coordinate: CLLocationCoordinate2D {
+		guard let lat = lat, let lng = lng else {
+			fatalError("lat and long are nil")
+		}
+		return CLLocationCoordinate2DMake(lat, lng)
+	}
+
+
 }
 struct Categories: Codable {
     let id: String // id for the type of category

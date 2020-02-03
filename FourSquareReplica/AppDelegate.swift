@@ -38,7 +38,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         let tab = UITabBarController()
         tab.tabBar.barTintColor = UIColor.black
         tab.tabBar.tintColor = UIColor.white
-        tab.viewControllers = [logoNav,listsNav]
+//        tab.viewControllers = [logoNav,listsNav]
+        tab.viewControllers = [logoNav]
+
         
         window = UIWindow.init(frame: UIScreen.main.bounds)
         window?.rootViewController = tab

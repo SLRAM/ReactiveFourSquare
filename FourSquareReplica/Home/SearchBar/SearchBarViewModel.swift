@@ -8,7 +8,6 @@
 
 import Foundation
 import ReactiveSwift
-import UIKit
 
 struct SearchBarViewModel {
 	let placeholder = "ex. Miami"

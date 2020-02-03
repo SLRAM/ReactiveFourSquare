@@ -14,7 +14,6 @@ class MapView: UIView {
 
 	let viewModel = MutableProperty<MapViewModel?>(nil)
 
-
 	lazy var mapView: MKMapView = {
 		let view = MKMapView()
 		view.mapType = MKMapType.standard
@@ -44,12 +43,6 @@ class MapView: UIView {
 	}
 }
 extension MapView {
-//	func setupGradient() {
-//		let gradient = CAGradientLayer()
-//		gradient.frame = self.bounds
-//		gradient.colors = [UIColor.magenta.cgColor,UIColor.red.cgColor,UIColor.purple.cgColor,UIColor.blue.cgColor]
-//		self.layer.addSublayer(gradient)
-//	}
 	func setupAnnotations() {
 		self.viewModel.producer.startWithValues { (model) in
 			print(model)

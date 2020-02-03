@@ -32,7 +32,6 @@ class LogoView: UIView {
     lazy var searchButton: UIButton = {
         let button = UIButton()
         button.setTitle("What are you looking for?", for: .normal)
-//        button.titleLabel?.textColor = .gray
         button.backgroundColor = .gray
         button.clipsToBounds = true
         button.alpha = 0.7
@@ -180,7 +179,6 @@ class LogoView: UIView {
         commonInit()
     }
     private func commonInit() {
-//                backgroundColor = .white
         setupLogoView()
     }
 }

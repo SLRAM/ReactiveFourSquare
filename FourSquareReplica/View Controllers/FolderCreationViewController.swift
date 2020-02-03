@@ -90,7 +90,6 @@ class FolderCreationViewController: UIViewController {
         if self.folderCreation.TextFields.text == "" || self.folderCreation.TextFields.text == " " {
                 self.createAlertForFolderIfEmpty(title:"Please enter a title", message: "Can't create a folder without a title")
         } else {
-        let thing = ListsDetailViewController()
         let folderDetails = folderSetUp.init(title: self.folderCreation.TextFields.text!, description: self.folderCreation.TextFields1.text!, createdAt: timestamp, details: [FavoritesSetUp]())
         FolderModel.add(item: folderDetails)
         self.listInfo = FolderModel.loadSave()

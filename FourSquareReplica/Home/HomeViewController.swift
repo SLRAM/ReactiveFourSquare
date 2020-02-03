@@ -113,10 +113,12 @@ extension HomeViewController: UITableViewDataSource, UITableViewDelegate{
 		let venueVM = self.homeViewModel.tableViewModel.venuesAtIndex(indexPath.row)
 		cell.model = venueVM
 		cell.locationName.text = "\(indexPath.row + 1). \(venueVM.venueName)"
+		cell.locationCategory.text = venueVM.venueCategory
 		cell.locationDistance.text = venueVM.venueDistance
 		cell.locationDescription.numberOfLines = venueVM.venueDescriptionLineCount
 		cell.locationDescription.text = venueVM.venueDescription
 // images not returning ***
+		print(ImageAPIClient.wrappedFunction())
 		cell.cellImage.reactive.image <~ cell.model.venueImage
 		cell.model.getImage() //triggers func which will update a venueImage value
 
@@ -160,6 +162,7 @@ extension HomeViewController: MKMapViewDelegate{
 				let destinationVC = HomeDetailViewController()
 				destinationVC.venue = venue
 				navigationController?.pushViewController(destinationVC, animated: true)
+				break
 			}
 		}
 	}
